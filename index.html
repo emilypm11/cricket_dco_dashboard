@@ -1326,6 +1326,7 @@ body.compact .chart-card      { padding: 14px 16px; }
             <button data-q="all" class="active">All</button>
             <button data-q="Q1">Q1</button>
             <button data-q="Q2">Q2</button>
+            <button data-q="Q3">Q3</button>
           </div>
         </div>
       </div>
@@ -1415,19 +1416,28 @@ body.compact .chart-card      { padding: 14px 16px; }
           <button class="active" data-q="all">All Quarters</button>
           <button data-q="Q1">Q1</button>
           <button data-q="Q2">Q2</button>
+          <button data-q="Q3">Q3</button>
         </div>
         <select class="an-select" id="anStageFilter">
           <option value="all">All Stages</option>
-          <option>1 - Mid Funnel</option>
-          <option>2 - Prospecting</option>
-          <option>3 - Homepage Visitor</option>
-          <option>4 - BYOD Visitor</option>
-          <option>4 - Deals Research</option>
-          <option>5 - Plan Research</option>
-          <option>6 - Multi Month Plan Research</option>
-          <option>7 - Device Page Visitor</option>
-          <option>8 - Cart Abandoner</option>
-          <option>9 - Order/Checkout</option>
+          <optgroup label="Q1 / Q2">
+            <option>1 - Mid Funnel</option>
+            <option>2 - Prospecting</option>
+            <option>3 - Homepage Visitor</option>
+            <option>4 - BYOD Visitor</option>
+            <option>4 - Deals Research</option>
+            <option>5 - Plan Research</option>
+            <option>6 - Multi Month Plan Research</option>
+            <option>7 - Device Page Visitor</option>
+            <option>8 - Cart Abandoner</option>
+            <option>9 - Order/Checkout</option>
+          </optgroup>
+          <optgroup label="Q3">
+            <option>Browser</option>
+            <option>Intent</option>
+            <option>Checkout/Purchase</option>
+            <option>Order</option>
+          </optgroup>
         </select>
         <div class="an-search">
           <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
@@ -1502,19 +1512,28 @@ body.compact .chart-card      { padding: 14px 16px; }
           <button class="active" data-q="all">All Quarters</button>
           <button data-q="Q1">Q1</button>
           <button data-q="Q2">Q2</button>
+          <button data-q="Q3">Q3</button>
         </div>
         <select class="an-select" id="crStageFilter">
           <option value="all">All Stages</option>
-          <option>1 - Mid Funnel</option>
-          <option>2 - Prospecting</option>
-          <option>3 - Homepage Visitor</option>
-          <option>4 - BYOD Visitor</option>
-          <option>4 - Deals Research</option>
-          <option>5 - Plan Research</option>
-          <option>6 - Multi Month Plan Research</option>
-          <option>7 - Device Page Visitor</option>
-          <option>8 - Cart Abandoner</option>
-          <option>9 - Order/Checkout</option>
+          <optgroup label="Q1 / Q2">
+            <option>1 - Mid Funnel</option>
+            <option>2 - Prospecting</option>
+            <option>3 - Homepage Visitor</option>
+            <option>4 - BYOD Visitor</option>
+            <option>4 - Deals Research</option>
+            <option>5 - Plan Research</option>
+            <option>6 - Multi Month Plan Research</option>
+            <option>7 - Device Page Visitor</option>
+            <option>8 - Cart Abandoner</option>
+            <option>9 - Order/Checkout</option>
+          </optgroup>
+          <optgroup label="Q3">
+            <option>Browser</option>
+            <option>Intent</option>
+            <option>Checkout/Purchase</option>
+            <option>Order</option>
+          </optgroup>
         </select>
         <div class="an-search">
           <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
@@ -2029,7 +2048,7 @@ async function loadBigQueryData() {
             SUM(\`Total Ads Requested\`)
           ) as lpvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
-        WHERE \`Flight\` IN ('Q1','Q2')
+        WHERE \`Flight\` IN ('Q1','Q2','Q3')
         GROUP BY \`Flight\`
       `),
       bqQuery(`
@@ -2043,7 +2062,7 @@ async function loadBigQueryData() {
             SUM(\`Total Ads Requested\`)
           ) as lpvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
-        WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
+        WHERE \`Flight\` IN ('Q1','Q2','Q3') AND \`Segment\` IS NOT NULL
         GROUP BY \`Flight\`, \`Segment\`
         ORDER BY \`Flight\`, imps DESC
       `),
@@ -2065,7 +2084,7 @@ async function loadBigQueryData() {
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr,
           SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as hmCvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
-        WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
+        WHERE \`Flight\` IN ('Q1','Q2','Q3') AND \`Segment\` IS NOT NULL
         GROUP BY q, mkt, stage
         ORDER BY imps DESC
       `),
@@ -2082,7 +2101,7 @@ async function loadBigQueryData() {
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`), SUM(\`Total Ads Requested\`)) as gmLpvr,
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
-        WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
+        WHERE \`Flight\` IN ('Q1','Q2','Q3') AND \`Segment\` IS NOT NULL
           AND \`Creative Offer Name\` IS NOT NULL
         GROUP BY q, mkt, stage, creative
         ORDER BY imps DESC
@@ -2500,7 +2519,7 @@ function filterQuarters(qSel) {
   const qs = PIVOT_DATA.quarters;
   const mkts = ['GM','USH'];
   const result = {};
-  const qKeys = qSel === 'all' ? ['Q1','Q2'] : [qSel];
+  const qKeys = qSel === 'all' ? ['Q1','Q2','Q3'] : [qSel];
   mkts.forEach(m => {
     result[m] = { imps:0, clicks:0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0, _n:0 };
     qKeys.forEach(q => {
@@ -2611,7 +2630,7 @@ function renderOvTrend(qSel) {
   document.getElementById('ovTrendAxis').innerHTML =
     picks.map(d => `<span>${d.label}</span>`).join('');
 
-  const label = qSel === 'all' ? 'Jan – Apr 2026 (Q1 + Q2)' : qSel === 'Q1' ? 'Jan – Mar 2026' : 'Apr 2026';
+  const label = qSel === 'all' ? 'Jan – Present 2026 (Q1 + Q2 + Q3)' : qSel === 'Q1' ? 'Jan – Mar 2026' : qSel === 'Q2' ? 'Apr – Jun 2026' : 'Jul 2026 – Present';
   document.getElementById('ovTrendSub').textContent = label;
 }
 
@@ -2672,7 +2691,7 @@ function renderOverview() {
   const totals = computeTotals(ovQ, ovMkt);
   const stages = computeStages(ovQ, ovMkt);
   const mktLabel = ovMkt === 'all' ? 'GM + USH' : ovMkt;
-  const qLabel   = ovQ   === 'all' ? 'Q1 + Q2' : ovQ;
+  const qLabel   = ovQ   === 'all' ? 'Q1 + Q2 + Q3' : ovQ;
   document.getElementById('ovSubtitle').textContent =
     `${qLabel} · ${mktLabel} · Flashtalking DCO`;
   renderOvKpis(totals, ovQ);
