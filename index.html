@@ -508,7 +508,7 @@ svg { display: block; }
 /* ─── Module 3: Overview ─────────────────────────────────── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 16px;
 }
@@ -679,7 +679,7 @@ svg { display: block; }
 /* ─── Module 4: Analytics ────────────────────────────────── */
 .mini-kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -1328,6 +1328,9 @@ body.compact .chart-card      { padding: 14px 16px; }
             <button data-q="Q2">Q2</button>
             <button data-q="Q3">Q3</button>
           </div>
+          <button class="btn-ghost btn-sm" id="downloadOneSheeterBtn" title="Download One-Sheeter" style="display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px">
+            <svg-icon name="print" size="14"></svg-icon> One-Sheeter
+          </button>
         </div>
       </div>
 
@@ -1951,6 +1954,19 @@ body.compact .chart-card      { padding: 14px 16px; }
   <symbol id="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
     <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
   </symbol>
+  <symbol id="ico-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+    <line x1="12" y1="1" x2="12" y2="23" stroke-linecap="round"/>
+    <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ico-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="17 6 23 6 23 12" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+    <polyline points="6 9 6 2 18 2 18 9"/>
+    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+    <rect x="6" y="14" width="12" height="8"/>
+  </symbol>
 </svg>
 
 
@@ -2046,7 +2062,9 @@ async function loadBigQueryData() {
           SAFE_DIVIDE(
             SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`) + SUM(\`CKT_bHISPANIC_GLOBAL_RT Count\`),
             SUM(\`Total Ads Requested\`)
-          ) as lpvr
+          ) as lpvr,
+          SUM(\`Spend\`) as spend,
+          SAFE_DIVIDE(SUM(\`Spend\`), NULLIF(SUM(\`Clicks\`), 0)) as cpc
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
         WHERE \`Flight\` IN ('Q1','Q2','Q3')
         GROUP BY \`Flight\`
@@ -2082,7 +2100,9 @@ async function loadBigQueryData() {
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), SUM(\`Total Ads Requested\`)) as gmTdor,
           SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), SUM(\`Total Ads Requested\`)) as hmTdor,
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr,
-          SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as hmCvr
+          SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as hmCvr,
+          SUM(\`Spend\`) as spend,
+          SAFE_DIVIDE(SUM(\`Spend\`), NULLIF(SUM(\`Clicks\`), 0)) as cpc
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
         WHERE \`Flight\` IN ('Q1','Q2','Q3') AND \`Segment\` IS NOT NULL
         GROUP BY q, mkt, stage
@@ -2099,7 +2119,9 @@ async function loadBigQueryData() {
           SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr,
           SUM(\`CKT_bNON_HISPANIC_ORDER Count\`) as gmOrd,
           SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`), SUM(\`Total Ads Requested\`)) as gmLpvr,
-          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr,
+          SUM(\`Spend\`) as spend,
+          SAFE_DIVIDE(SUM(\`Spend\`), NULLIF(SUM(\`Clicks\`), 0)) as cpc
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
         WHERE \`Flight\` IN ('Q1','Q2','Q3') AND \`Segment\` IS NOT NULL
           AND \`Creative Offer Name\` IS NOT NULL
@@ -2114,9 +2136,10 @@ async function loadBigQueryData() {
       const orders = Number(r.orders)||0;
       const clicks = Number(r.clicks)||0;
       const lpvr   = Number(r.lpvr)||0;
+      const spend  = Number(r.spend)||0;
       newQ[r.quarter] = {
-        GM:  { imps: Number(r.imps)||0, clicks, gmOrd: orders, hmOrd:0, ctr: Number(r.ctr)||0, gmLpvr: lpvr, gmCvr: clicks ? orders/clicks : 0 },
-        USH: { imps: 0, clicks: 0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0 }
+        GM:  { imps: Number(r.imps)||0, clicks, gmOrd: orders, hmOrd:0, ctr: Number(r.ctr)||0, gmLpvr: lpvr, gmCvr: clicks ? orders/clicks : 0, spend, cpc: Number(r.cpc)||0 },
+        USH: { imps: 0, clicks: 0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0, spend:0, cpc:0 }
       };
     });
     if (Object.keys(newQ).length) PIVOT_DATA.quarters = newQ;
@@ -2152,6 +2175,8 @@ async function loadBigQueryData() {
         hmTdor: Number(r.hmTdor) || 0,
         gmCvr:  Number(r.gmCvr)  || 0,
         hmCvr:  Number(r.hmCvr)  || 0,
+        spend:  Number(r.spend)  || 0,
+        cpc:    Number(r.cpc)    || 0,
       }));
     }
 
@@ -2168,6 +2193,8 @@ async function loadBigQueryData() {
         gmOrd:    Number(r.gmOrd)  || 0,
         gmLpvr:   Number(r.gmLpvr) || 0,
         gmCvr:    Number(r.gmCvr)  || 0,
+        spend:    Number(r.spend)  || 0,
+        cpc:      Number(r.cpc)    || 0,
       }));
     }
 
@@ -2365,6 +2392,9 @@ const FMT = {
   pct:  n => (n * 100).toFixed(3) + '%',
   pct2: n => (n * 100).toFixed(2) + '%',
   pct1: n => (n * 100).toFixed(1) + '%',
+  dollar: n => n >= 1e6 ? '$' + (n/1e6).toFixed(2) + 'M'
+             : n >= 1e3 ? '$' + (n/1e3).toFixed(1) + 'K'
+             : '$' + n.toFixed(2),
 };
 
 function deltaPill(val) {
@@ -2521,7 +2551,7 @@ function filterQuarters(qSel) {
   const result = {};
   const qKeys = qSel === 'all' ? ['Q1','Q2','Q3'] : [qSel];
   mkts.forEach(m => {
-    result[m] = { imps:0, clicks:0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0, _n:0 };
+    result[m] = { imps:0, clicks:0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0, spend:0, cpc:0, _n:0 };
     qKeys.forEach(q => {
       if (!qs[q]?.[m]) return;
       const r = qs[q][m];
@@ -2529,11 +2559,13 @@ function filterQuarters(qSel) {
       result[m].clicks += r.clicks;
       result[m].gmOrd  += r.gmOrd;
       result[m].hmOrd  += r.hmOrd;
+      result[m].spend  += r.spend || 0;
     });
     if (result[m].imps) {
       result[m].ctr    = result[m].clicks / result[m].imps;
       result[m].gmLpvr = qKeys.reduce((s,q)=>s+(qs[q]?.[m]?.gmLpvr||0),0) / qKeys.filter(q=>qs[q]?.[m]).length;
       result[m].gmCvr  = result[m].gmOrd / result[m].clicks || 0;
+      result[m].cpc    = result[m].clicks ? result[m].spend / result[m].clicks : 0;
     }
   });
   return result;
@@ -2542,16 +2574,18 @@ function filterQuarters(qSel) {
 function computeTotals(qSel, mktSel) {
   const byMkt = filterQuarters(qSel);
   const mkts  = mktSel === 'all' ? ['GM','USH'] : [mktSel];
-  const t = { imps:0, clicks:0, gmOrd:0, hmOrd:0 };
+  const t = { imps:0, clicks:0, gmOrd:0, hmOrd:0, spend:0 };
   mkts.forEach(m => {
     t.imps   += byMkt[m].imps;
     t.clicks += byMkt[m].clicks;
     t.gmOrd  += byMkt[m].gmOrd;
     t.hmOrd  += byMkt[m].hmOrd;
+    t.spend  += byMkt[m].spend || 0;
   });
   t.ctr    = t.imps   ? t.clicks / t.imps : 0;
   t.gmLpvr = mkts.reduce((s,m)=>s+(byMkt[m].gmLpvr||0),0) / mkts.length;
   t.gmCvr  = t.clicks ? t.gmOrd  / t.clicks : 0;
+  t.cpc    = t.clicks ? t.spend  / t.clicks : 0;
   t.byMkt  = byMkt;
   return t;
 }
@@ -2582,22 +2616,27 @@ function computeStages(qSel, mktSel) {
 /* ── KPI render ─────────────────────────────────────────── */
 function renderOvKpis(t, qSel, prevQ) {
   // Simple period delta: compare single quarters if possible
-  let deltas = { imps:0, clicks:0, ctr:0, gmOrd:0, gmLpvr:0, gmCvr:0 };
+  let deltas = { imps:0, clicks:0, ctr:0, gmOrd:0, gmLpvr:0, gmCvr:0, spend:0, cpc:0 };
   if (qSel === 'Q2') {
     const p = computeTotals('Q1', 'all');
-    deltas.imps   = (t.imps   - p.imps)   / p.imps;
-    deltas.clicks = (t.clicks - p.clicks)  / p.clicks;
-    deltas.ctr    = (t.ctr    - p.ctr)     / p.ctr;
-    deltas.gmOrd  = (t.gmOrd  - p.gmOrd)   / p.gmOrd;
+    deltas.imps   = (t.imps   - p.imps)   / (p.imps   || 1);
+    deltas.clicks = (t.clicks - p.clicks)  / (p.clicks || 1);
+    deltas.ctr    = (t.ctr    - p.ctr)     / (p.ctr    || 1);
+    deltas.gmOrd  = (t.gmOrd  - p.gmOrd)   / (p.gmOrd  || 1);
+    deltas.spend  = (t.spend  - p.spend)   / (p.spend  || 1);
+    deltas.cpc    = (t.cpc    - p.cpc)     / (p.cpc    || 1);
   }
 
+  const showSpend = t.spend > 0;
   const tiles = [
-    { label:'Total Impressions', val:FMT.abbr(t.imps),    delta:deltas.imps,   icon:'eye',  tint:'green', sub:'GM + USH combined' },
-    { label:'Total Clicks',      val:FMT.abbr(t.clicks),  delta:deltas.clicks, icon:'chart', tint:'blue',  sub:'All placements' },
-    { label:'CTR',               val:FMT.pct(t.ctr),      delta:deltas.ctr,    icon:'dots',  tint:'',      sub:'Click-through rate' },
-    { label:'GM Orders',         val:FMT.num(t.gmOrd),    delta:deltas.gmOrd,  icon:'check', tint:'',      sub:'Total order floodlights' },
-    { label:'GM LPVR',           val:FMT.pct1(t.gmLpvr),  delta:0,             icon:'link',  tint:'',      sub:'Landing page view rate' },
-    { label:'GM CVR',            val:FMT.pct2(t.gmCvr),   delta:0,             icon:'lock',  tint:'',      sub:'Click-to-order rate' },
+    { label:'Total Impressions', val:FMT.abbr(t.imps),         delta:deltas.imps,   icon:'eye',    tint:'green', sub:'GM + USH combined' },
+    { label:'Total Clicks',      val:FMT.abbr(t.clicks),       delta:deltas.clicks, icon:'chart',  tint:'blue',  sub:'All placements' },
+    { label:'CTR',               val:FMT.pct(t.ctr),           delta:deltas.ctr,    icon:'dots',   tint:'',      sub:'Click-through rate' },
+    { label:'GM Orders',         val:FMT.num(t.gmOrd),         delta:deltas.gmOrd,  icon:'check',  tint:'',      sub:'Total order floodlights' },
+    { label:'Total Spend',       val:showSpend ? FMT.dollar(t.spend) : '—', delta:deltas.spend, icon:'dollar', tint:'', sub:'Media spend' },
+    { label:'Avg. CPC',          val:showSpend ? '$'+t.cpc.toFixed(2)  : '—', delta:deltas.cpc,   icon:'trending-up', tint:'', sub:'Cost per click' },
+    { label:'GM LPVR',           val:FMT.pct1(t.gmLpvr),       delta:0,             icon:'link',   tint:'',      sub:'Landing page view rate' },
+    { label:'GM CVR',            val:FMT.pct2(t.gmCvr),        delta:0,             icon:'lock',   tint:'',      sub:'Click-to-order rate' },
   ];
   document.getElementById('ovKpiGrid').innerHTML = tiles.map(tile => {
     const tileClass = tile.tint === 'green' ? 'kpi-tile-green' : tile.tint === 'blue' ? 'kpi-tile-blue' : '';
@@ -2843,7 +2882,8 @@ function anAgg(rows) {
     clicks: a.clicks + r.clicks,
     gmOrd:  a.gmOrd  + r.gmOrd,
     hmOrd:  a.hmOrd  + (r.hmOrd||0),
-  }), {imps:0, clicks:0, gmOrd:0, hmOrd:0});
+    spend:  a.spend  + (r.spend||0),
+  }), {imps:0, clicks:0, gmOrd:0, hmOrd:0, spend:0});
 }
 
 /* ── Number formatters ───────────────────────────────────── */
@@ -2855,14 +2895,17 @@ const fmtN   = v => v == null ? '—' : Number(v).toLocaleString();
 function renderAnKpis(rows) {
   const agg = anAgg(rows);
   const ctr   = agg.clicks / (agg.imps || 1);
-  const cvr   = agg.gmOrd  / (agg.clicks || 1);
   const lpvr  = rows.reduce((a,r)=>a + r.imps*(r.gmLpvr||0),0) / (agg.imps||1);
+  const cpc   = agg.clicks ? agg.spend / agg.clicks : 0;
+  const showSpend = agg.spend > 0;
 
   const tiles = [
-    { label:'Total Impressions', val: fmtM(agg.imps),           icon:'bar-chart-2', color:'var(--accent)' },
-    { label:'Avg CTR',           val: fmtPct(ctr),               icon:'mouse-pointer', color:'var(--blue)' },
-    { label:'GM Orders',         val: fmtN(agg.gmOrd),           icon:'shopping-cart', color:'var(--purple)' },
-    { label:'Avg GM LPVR',       val: (lpvr*100).toFixed(2)+'%', icon:'trending-up', color:'var(--orange)' },
+    { label:'Total Impressions', val: fmtM(agg.imps),                              icon:'bar-chart-2',  color:'var(--accent)' },
+    { label:'Avg CTR',           val: fmtPct(ctr),                                  icon:'mouse-pointer', color:'var(--blue)' },
+    { label:'GM Orders',         val: fmtN(agg.gmOrd),                              icon:'shopping-cart', color:'var(--purple)' },
+    { label:'Avg GM LPVR',       val: (lpvr*100).toFixed(2)+'%',                    icon:'trending-up',  color:'var(--orange)' },
+    { label:'Total Spend',       val: showSpend ? FMT.dollar(agg.spend) : '—',      icon:'dollar',       color:'var(--accent)' },
+    { label:'Avg CPC',           val: showSpend ? '$'+cpc.toFixed(2) : '—',         icon:'dollar',       color:'var(--blue)' },
   ];
   document.getElementById('anKpiRow').innerHTML = tiles.map(t => `
     <div class="mini-kpi">
@@ -2926,6 +2969,8 @@ const STAGE_COLS = [
   {key:'hmTdor', label:'HM TDOR',  fmt:v=>(v*100).toFixed(4)+'%'},
   {key:'gmCvr',  label:'GM CVR',   fmt:v=>{ const p=(v*100).toFixed(3)+'%'; return v>1?`<span class="cvr-high">${p}</span>`:v>.05?`<span class="cvr-med">${p}</span>`:p; }},
   {key:'hmCvr',  label:'HM CVR',   fmt:fmtPct},
+  {key:'spend',  label:'Spend',    fmt:v=>v>0 ? FMT.dollar(v) : '—'},
+  {key:'cpc',    label:'CPC',      fmt:v=>v>0 ? '$'+v.toFixed(2) : '—'},
 ];
 
 const CREATIVE_COLS = [
@@ -2939,6 +2984,8 @@ const CREATIVE_COLS = [
   {key:'gmOrd',   label:'GM Ord', fmt:fmtN},
   {key:'gmLpvr',  label:'GM LPVR',fmt:fmtPct},
   {key:'gmCvr',   label:'GM CVR', fmt:v=>{ const p=(v*100).toFixed(3)+'%'; return v>1?`<span class="cvr-high">${p}</span>`:v>.05?`<span class="cvr-med">${p}</span>`:p; }},
+  {key:'spend',   label:'Spend',  fmt:v=>v>0 ? FMT.dollar(v) : '—'},
+  {key:'cpc',     label:'CPC',    fmt:v=>v>0 ? '$'+v.toFixed(2) : '—'},
 ];
 
 function renderAnTable(rows, cols) {
@@ -3936,6 +3983,200 @@ window.__onTabSwitch = tab => {
 
 /* ── Initial render (in case tab is already active) ─────── */
 renderReports();
+</script>
+
+<script>
+/* ── One-Sheeter Generator ───────────────────────────────── */
+function generateOneSheet() {
+  const today = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'});
+  const selQ   = typeof ovQ   !== 'undefined' ? ovQ   : 'all';
+  const selMkt = typeof ovMkt !== 'undefined' ? ovMkt : 'all';
+
+  // Determine which quarters to show
+  const allQs = ['Q1','Q2','Q3'];
+  const activeQs = selQ === 'all'
+    ? allQs.filter(q => PIVOT_DATA.quarters[q])
+    : [selQ];
+
+  const qRanges = { Q1:'Jan 1 – Mar 31, 2026', Q2:'Apr 1 – Jun 30, 2026', Q3:'Jul 1 – Present, 2026' };
+
+  // Build KPI block per quarter
+  function qBlock(q) {
+    const d = PIVOT_DATA.quarters[q];
+    if (!d) return '';
+    const gm = d.GM || {};
+    const ush = d.USH || {};
+    const imps   = (gm.imps||0) + (ush.imps||0);
+    const clicks = (gm.clicks||0) + (ush.clicks||0);
+    const orders = (gm.gmOrd||0) + (ush.gmOrd||0);
+    const spend  = (gm.spend||0) + (ush.spend||0);
+    const ctr    = imps ? clicks/imps : 0;
+    const cpc    = clicks ? spend/clicks : 0;
+    // GM Events = global spotlight signals (proxy for landing page visits)
+    const gmEvents = Math.round((gm.gmLpvr||0) * (gm.imps||0));
+    const hasSpend = spend > 0;
+    return `<div class="q-block">
+      <div class="q-block-header">${q} — ${qRanges[q]}</div>
+      <div class="q-kpis">
+        <div class="q-kpi"><div class="q-kpi-val">${FMT.abbr(imps)}</div><div class="q-kpi-lbl">IMPRESSIONS</div></div>
+        <div class="q-kpi"><div class="q-kpi-val">${FMT.abbr(gmEvents)}</div><div class="q-kpi-lbl">GM EVENTS</div></div>
+        <div class="q-kpi"><div class="q-kpi-val">${(ctr*100).toFixed(3)}%</div><div class="q-kpi-lbl">CTR</div></div>
+      </div>
+      <div class="q-kpis q-kpis-2">
+        <div class="q-kpi"><div class="q-kpi-val">${FMT.num(orders)}</div><div class="q-kpi-lbl">ORDER EVENTS</div></div>
+        <div class="q-kpi"><div class="q-kpi-val">${hasSpend ? FMT.dollar(spend) : '—'}</div><div class="q-kpi-lbl">TOTAL SPEND</div></div>
+        <div class="q-kpi"><div class="q-kpi-val">${hasSpend ? '$'+cpc.toFixed(2) : '—'}</div><div class="q-kpi-lbl">AVG. CPC</div></div>
+      </div>
+    </div>`;
+  }
+
+  // Top creatives helpers
+  const mktFilter = r => selMkt === 'all' || r.mkt === selMkt;
+  const qFilter   = r => selQ === 'all' || r.q === selQ;
+  const crRows = AN_CREATIVES.filter(r => mktFilter(r) && qFilter(r));
+
+  function topTable(rows, sortKey, label, valFmt) {
+    const sorted = [...rows].sort((a,b)=>(b[sortKey]||0)-(a[sortKey]||0)).slice(0,7);
+    if (!sorted.length) return '<p class="no-data">No data</p>';
+    return `<table class="os-table"><thead><tr><th>#</th><th>Creative / Offer</th><th>Qtr</th><th>${label}</th><th>Imps</th></tr></thead><tbody>
+      ${sorted.map((r,i)=>`<tr>
+        <td class="rank">${i+1}</td>
+        <td class="creative-cell"><span class="badge ${r.mkt.toLowerCase()}">${r.mkt}</span>${r.creative||r.stage}</td>
+        <td><span class="badge ${r.q.toLowerCase()}">${r.q}</span></td>
+        <td class="val">${valFmt(r[sortKey]||0)}</td>
+        <td class="val-muted">${FMT.abbr(r.imps||0)}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function lpvrTable(rows) {
+    const sorted = [...rows].sort((a,b)=>(b.gmLpvr||0)-(a.gmLpvr||0)).slice(0,7);
+    if (!sorted.length) return '<p class="no-data">No data</p>';
+    return `<table class="os-table"><thead><tr><th>#</th><th>Creative / Offer</th><th>Segment</th><th>LPVR</th><th>CPC</th></tr></thead><tbody>
+      ${sorted.map((r,i)=>`<tr>
+        <td class="rank">${i+1}</td>
+        <td class="creative-cell"><span class="badge ${r.q.toLowerCase()}">${r.q}</span>${r.creative||'—'}</td>
+        <td>${r.stage||'—'}</td>
+        <td class="val">${(r.gmLpvr*100).toFixed(1)}%</td>
+        <td class="val-muted">${r.cpc>0?'$'+r.cpc.toFixed(2):'—'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  // Auto-generate insights
+  const totAll = computeTotals('all','all');
+  const byOrders = [...crRows].sort((a,b)=>(b.gmOrd||0)-(a.gmOrd||0));
+  const topOrder = byOrders[0];
+  const topCtr   = [...crRows].sort((a,b)=>(b.ctr||0)-(a.ctr||0))[0];
+  const totSpend = activeQs.reduce((s,q)=>{const d=PIVOT_DATA.quarters[q];return s+((d?.GM?.spend||0)+(d?.USH?.spend||0));},0);
+
+  const insights = [
+    topOrder ? `<strong>Top Order Driver:</strong> "${topOrder.creative}" (${topOrder.q}, ${topOrder.mkt}) generated ${FMT.num(topOrder.gmOrd)} orders on ${FMT.abbr(topOrder.imps)} impressions — highest order volume in the selected period.` : null,
+    topCtr   ? `<strong>Highest CTR Creative:</strong> "${topCtr.creative}" (${topCtr.q}, ${topCtr.mkt}) achieved ${(topCtr.ctr*100).toFixed(3)}% CTR on ${FMT.abbr(topCtr.imps)} impressions.` : null,
+    totSpend > 0 ? `<strong>Overall Efficiency:</strong> ${FMT.dollar(totSpend)} total spend across ${activeQs.join(' + ')} at an average CPC of $${(totAll.spend&&totAll.clicks?totAll.spend/totAll.clicks:0).toFixed(2)}.` : null,
+    `<strong>Data Source:</strong> Flashtalking / Innovid DCO delivery data via BigQuery (crk-dco-dash.reporting_data.deliveries_view). Audience signals from floodlight spotlight columns.`,
+  ].filter(Boolean);
+
+  const titleQ = selQ === 'all' ? activeQs.join('-') : selQ;
+  const mktLabel = selMkt === 'all' ? 'GM + USH' : selMkt;
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Cricket Wireless DCO One-Sheeter — ${titleQ} 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Poppins', sans-serif; font-size: 11px; color: #1a1a1a; background: #fff; }
+  .page { width: 1100px; margin: 0 auto; padding: 24px 28px; }
+  /* Header */
+  .os-header { background: #0d0d0d; color: #fff; padding: 14px 20px; border-radius: 8px 8px 0 0; }
+  .os-header-title { font-size: 18px; font-weight: 800; color: #5BC500; letter-spacing: -.3px; }
+  .os-header-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .section-label { font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #888; margin: 16px 0 8px; border-bottom: 1px solid #e8e8e8; padding-bottom: 5px; }
+  /* Quarter KPI blocks */
+  .q-row { display: flex; gap: 12px; margin-bottom: 4px; }
+  .q-block { flex: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e0e0e0; }
+  .q-block-header { background: #1a1a1a; color: #fff; padding: 7px 12px; font-size: 11px; font-weight: 700; }
+  .q-kpis { display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 12px 4px; gap: 6px; }
+  .q-kpis-2 { padding-top: 4px; border-top: 1px solid #f0f0f0; }
+  .q-kpi-val { font-size: 17px; font-weight: 800; color: #111; letter-spacing: -.5px; }
+  .q-kpi-lbl { font-size: 8.5px; font-weight: 600; letter-spacing: .8px; color: #888; text-transform: uppercase; margin-top: 1px; }
+  /* Tables */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+  .os-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  .os-table th { background: #f5f5f5; padding: 5px 7px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #666; border-bottom: 1px solid #e0e0e0; }
+  .os-table td { padding: 5px 7px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  .os-table tr:last-child td { border-bottom: none; }
+  .rank { color: #aaa; font-weight: 700; width: 18px; }
+  .val { font-weight: 700; color: #111; }
+  .val-muted { color: #888; }
+  .creative-cell { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-right: 4px; text-transform: uppercase; letter-spacing: .3px; }
+  .badge.q1 { background: #e8f5e9; color: #2e7d32; }
+  .badge.q2 { background: #e3f2fd; color: #1565c0; }
+  .badge.q3 { background: #fff3e0; color: #e65100; }
+  .badge.gm  { background: #f3e5f5; color: #6a1b9a; }
+  .badge.ush { background: #fff8e1; color: #f57f17; }
+  .col-title { font-size: 11px; font-weight: 700; color: #222; margin-bottom: 6px; }
+  /* Insights */
+  .insights-box { background: #f8f8f8; border-radius: 6px; padding: 12px 16px; }
+  .insights-box ul { padding-left: 16px; }
+  .insights-box li { margin-bottom: 6px; line-height: 1.55; }
+  .no-data { color: #aaa; font-size: 10px; padding: 8px 0; }
+  /* Footer */
+  .os-footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 9px; color: #aaa; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { size: letter landscape; margin: 10mm; }
+    .page { width: 100%; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="os-header">
+    <div class="os-header-title">Cricket Wireless — ${titleQ} 2026 DCO Internal Performance Review</div>
+    <div class="os-header-sub">Data updated ${today} · ${mktLabel} · Flashtalking / Innovid DCO</div>
+  </div>
+
+  <div class="section-label">Campaign Performance Overview</div>
+  <div class="q-row">
+    ${activeQs.map(q => qBlock(q)).join('')}
+  </div>
+
+  <div class="two-col" style="margin-top:14px">
+    <div>
+      <div class="section-label">Top Creatives — Orders</div>
+      <div class="col-title"></div>
+      ${topTable(crRows, 'gmOrd', 'Orders', v=>FMT.num(v))}
+    </div>
+    <div>
+      <div class="section-label">Top Creatives — CTR</div>
+      ${topTable(crRows, 'ctr', 'CTR', v=>(v*100).toFixed(3)+'%')}
+      <div class="section-label" style="margin-top:12px">Top Creatives — LPVR & CPC</div>
+      ${lpvrTable(crRows)}
+    </div>
+  </div>
+
+  <div class="section-label">Key Insights</div>
+  <div class="insights-box">
+    <ul>${insights.map(i=>`<li>${i}</li>`).join('')}</ul>
+  </div>
+
+  <div class="os-footer">
+    <span>Cricket Wireless DCO · ${mktLabel} · Ad Server: Flashtalking / Innovid · Data through ${today}</span>
+    <span>Prepared by: Emily McAndrew · Argonaut · ${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span>
+  </div>
+</div>
+<script>window.onload = function(){ window.print(); }<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
+document.getElementById('downloadOneSheeterBtn').addEventListener('click', generateOneSheet);
 </script>
 </body>
 </html>
