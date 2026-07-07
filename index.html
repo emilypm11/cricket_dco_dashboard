@@ -2017,7 +2017,7 @@ async function bqQuery(sql) {
 /* ── Load live data from BigQuery ────────────────────────── */
 async function loadBigQueryData() {
   try {
-    const [qRows, sRows] = await Promise.all([
+    const [qRows, sRows, anStageRows, anCreativeRows] = await Promise.all([
       bqQuery(`
         SELECT \`Flight\` as quarter,
           SUM(\`Total Ads Requested\`) as imps,
@@ -2046,6 +2046,46 @@ async function loadBigQueryData() {
         WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
         GROUP BY \`Flight\`, \`Segment\`
         ORDER BY \`Flight\`, imps DESC
+      `),
+      bqQuery(`
+        SELECT
+          \`Flight\` as q,
+          CASE WHEN \`Strategy\` LIKE '%USH%' THEN 'USH' ELSE 'GM' END as mkt,
+          \`Segment\` as stage,
+          SAFE_DIVIDE(SUM(\`Total Ads Requested\`), NULLIF(SUM(\`Cookie ID Reach: Total Ad Reach\`), 0)) as freq,
+          SUM(\`Total Ads Requested\`) as imps,
+          SUM(\`Clicks\`) as clicks,
+          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr,
+          SUM(\`CKT_bNON_HISPANIC_ORDER Count\`) as gmOrd,
+          SUM(\`CKT_bHISPANIC_ORDER Count\`) as hmOrd,
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`), SUM(\`Total Ads Requested\`)) as gmLpvr,
+          SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_GLOBAL_RT Count\`), SUM(\`Total Ads Requested\`)) as hmLpvr,
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), SUM(\`Total Ads Requested\`)) as gmTdor,
+          SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), SUM(\`Total Ads Requested\`)) as hmTdor,
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr,
+          SAFE_DIVIDE(SUM(\`CKT_bHISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as hmCvr
+        FROM \`crk-dco-dash.reporting_data.deliveries_view\`
+        WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
+        GROUP BY q, mkt, stage
+        ORDER BY imps DESC
+      `),
+      bqQuery(`
+        SELECT
+          \`Flight\` as q,
+          CASE WHEN \`Strategy\` LIKE '%USH%' THEN 'USH' ELSE 'GM' END as mkt,
+          \`Segment\` as stage,
+          \`Creative Offer Name\` as creative,
+          SUM(\`Total Ads Requested\`) as imps,
+          SUM(\`Clicks\`) as clicks,
+          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr,
+          SUM(\`CKT_bNON_HISPANIC_ORDER Count\`) as gmOrd,
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`), SUM(\`Total Ads Requested\`)) as gmLpvr,
+          SAFE_DIVIDE(SUM(\`CKT_bNON_HISPANIC_ORDER Count\`), NULLIF(SUM(\`Clicks\`), 0)) as gmCvr
+        FROM \`crk-dco-dash.reporting_data.deliveries_view\`
+        WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
+          AND \`Creative Offer Name\` IS NOT NULL
+        GROUP BY q, mkt, stage, creative
+        ORDER BY imps DESC
       `)
     ]);
 
@@ -2062,7 +2102,7 @@ async function loadBigQueryData() {
     });
     if (Object.keys(newQ).length) PIVOT_DATA.quarters = newQ;
 
-    // Rebuild stages
+    // Rebuild overview stages
     const newS = sRows.map(r => {
       const orders = Number(r.orders)||0;
       const clicks = Number(r.clicks)||0;
@@ -2074,6 +2114,43 @@ async function loadBigQueryData() {
       };
     });
     if (newS.length) PIVOT_DATA.stages = newS;
+
+    // Rebuild analytics stage table from live BQ data
+    if (anStageRows.length) {
+      AN_STAGES = anStageRows.map(r => ({
+        q:      r.q,
+        mkt:    r.mkt,
+        stage:  r.stage,
+        imps:   Number(r.imps)   || 0,
+        freq:   Number(r.freq)   || 1,
+        clicks: Number(r.clicks) || 0,
+        ctr:    Number(r.ctr)    || 0,
+        gmOrd:  Number(r.gmOrd)  || 0,
+        hmOrd:  Number(r.hmOrd)  || 0,
+        gmLpvr: Number(r.gmLpvr) || 0,
+        hmLpvr: Number(r.hmLpvr) || 0,
+        gmTdor: Number(r.gmTdor) || 0,
+        hmTdor: Number(r.hmTdor) || 0,
+        gmCvr:  Number(r.gmCvr)  || 0,
+        hmCvr:  Number(r.hmCvr)  || 0,
+      }));
+    }
+
+    // Rebuild analytics creative table from live BQ data
+    if (anCreativeRows.length) {
+      AN_CREATIVES = anCreativeRows.map(r => ({
+        q:        r.q,
+        mkt:      r.mkt,
+        stage:    r.stage,
+        creative: r.creative || '',
+        imps:     Number(r.imps)   || 0,
+        clicks:   Number(r.clicks) || 0,
+        ctr:      Number(r.ctr)    || 0,
+        gmOrd:    Number(r.gmOrd)  || 0,
+        gmLpvr:   Number(r.gmLpvr) || 0,
+        gmCvr:    Number(r.gmCvr)  || 0,
+      }));
+    }
 
     // Re-render if dashboard is already visible
     if (typeof renderOverview  === 'function') renderOverview();
@@ -2657,7 +2734,7 @@ window.__onShellReady = function(user) {
      ═══════════════════════════════════════════════════════ -->
 <script>
 /* ── Embedded pivot data (all 12 metrics) ────────────────── */
-const AN_STAGES = [
+let AN_STAGES = [
   // Q1 GM
   {q:'Q1',mkt:'GM',stage:'1 - Mid Funnel',       imps:163419123,freq:1.062,clicks:114133,ctr:0.000698,gmOrd:1462,hmOrd:2,   gmLpvr:0.01152,hmLpvr:0.00030,gmTdor:0.0000090,hmTdor:0,gmCvr:0.01281,hmCvr:0.000018},
   {q:'Q1',mkt:'GM',stage:'2 - Prospecting',       imps:30837755, freq:1.098,clicks:19040, ctr:0.000617,gmOrd:595, hmOrd:2,   gmLpvr:0.01703,hmLpvr:0.00037,gmTdor:0.0000193,hmTdor:0,gmCvr:0.03125,hmCvr:0.000105},
@@ -2689,7 +2766,7 @@ const AN_STAGES = [
   {q:'Q2',mkt:'USH',stage:'2 - Prospecting',      imps:341076,   freq:1.050,clicks:110,   ctr:0.000323,gmOrd:0,   hmOrd:0,   gmLpvr:0.00244,hmLpvr:0,      gmTdor:0,        hmTdor:0,gmCvr:0,      hmCvr:0},
 ];
 
-const AN_CREATIVES = [
+let AN_CREATIVES = [
   // Q1 GM · Mid Funnel
   {q:'Q1',mkt:'GM',stage:'1 - Mid Funnel',creative:'Standard Template – Cricket pricing = simple, transparent.',           imps:18416029,clicks:12256,gmOrd:150,ctr:0.000666,gmLpvr:0.01283,gmCvr:0.01224},
   {q:'Q1',mkt:'GM',stage:'1 - Mid Funnel',creative:'Standard Template – Get the moto razr Swarovski from Cricket.',        imps:24189644,clicks:17101,gmOrd:226,ctr:0.000707,gmLpvr:0.01113,gmCvr:0.01322},
