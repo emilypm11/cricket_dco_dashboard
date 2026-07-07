@@ -2022,7 +2022,12 @@ async function loadBigQueryData() {
         SELECT \`Flight\` as quarter,
           SUM(\`Total Ads Requested\`) as imps,
           SUM(\`Clicks\`) as clicks,
-          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr
+          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr,
+          SUM(\`CKT_bNON_HISPANIC_ORDER Count\`) + SUM(\`CKT_bHISPANIC_ORDER Count\`) as orders,
+          SAFE_DIVIDE(
+            SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`) + SUM(\`CKT_bHISPANIC_GLOBAL_RT Count\`),
+            SUM(\`Total Ads Requested\`)
+          ) as lpvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
         WHERE \`Flight\` IN ('Q1','Q2')
         GROUP BY \`Flight\`
@@ -2031,7 +2036,12 @@ async function loadBigQueryData() {
         SELECT \`Flight\` as quarter, \`Segment\` as stage,
           SUM(\`Total Ads Requested\`) as imps,
           SUM(\`Clicks\`) as clicks,
-          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr
+          SAFE_DIVIDE(SUM(\`Clicks\`), SUM(\`Total Ads Requested\`)) as ctr,
+          SUM(\`CKT_bNON_HISPANIC_ORDER Count\`) + SUM(\`CKT_bHISPANIC_ORDER Count\`) as orders,
+          SAFE_DIVIDE(
+            SUM(\`CKT_bNON_HISPANIC_GLOBAL_RT Count\`) + SUM(\`CKT_bHISPANIC_GLOBAL_RT Count\`),
+            SUM(\`Total Ads Requested\`)
+          ) as lpvr
         FROM \`crk-dco-dash.reporting_data.deliveries_view\`
         WHERE \`Flight\` IN ('Q1','Q2') AND \`Segment\` IS NOT NULL
         GROUP BY \`Flight\`, \`Segment\`
@@ -2042,19 +2052,27 @@ async function loadBigQueryData() {
     // Rebuild quarter totals
     const newQ = {};
     qRows.forEach(r => {
+      const orders = Number(r.orders)||0;
+      const clicks = Number(r.clicks)||0;
+      const lpvr   = Number(r.lpvr)||0;
       newQ[r.quarter] = {
-        GM:  { imps: Number(r.imps)||0, clicks: Number(r.clicks)||0, gmOrd:0, hmOrd:0, ctr: Number(r.ctr)||0, gmLpvr:0, gmCvr:0 },
+        GM:  { imps: Number(r.imps)||0, clicks, gmOrd: orders, hmOrd:0, ctr: Number(r.ctr)||0, gmLpvr: lpvr, gmCvr: clicks ? orders/clicks : 0 },
         USH: { imps: 0, clicks: 0, gmOrd:0, hmOrd:0, ctr:0, gmLpvr:0, gmCvr:0 }
       };
     });
     if (Object.keys(newQ).length) PIVOT_DATA.quarters = newQ;
 
     // Rebuild stages
-    const newS = sRows.map(r => ({
-      q: r.quarter, mkt: 'GM', stage: r.stage,
-      imps: Number(r.imps)||0, clicks: Number(r.clicks)||0,
-      gmOrd: 0, ctr: Number(r.ctr)||0, gmLpvr: 0, gmCvr: 0
-    }));
+    const newS = sRows.map(r => {
+      const orders = Number(r.orders)||0;
+      const clicks = Number(r.clicks)||0;
+      return {
+        q: r.quarter, mkt: 'GM', stage: r.stage,
+        imps: Number(r.imps)||0, clicks,
+        gmOrd: orders, ctr: Number(r.ctr)||0,
+        gmLpvr: Number(r.lpvr)||0, gmCvr: clicks ? orders/clicks : 0
+      };
+    });
     if (newS.length) PIVOT_DATA.stages = newS;
 
     // Re-render if dashboard is already visible
