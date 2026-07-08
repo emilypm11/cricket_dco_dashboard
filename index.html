@@ -2073,10 +2073,27 @@ body.compact .chart-card      { padding: 14px 16px; }
 
       <div class="pv-controls">
         <div class="pv-control-group">
+          <span class="pv-label">Market</span>
+          <div class="seg-tabs green" id="pvMktFilter">
+            <button class="active" data-mkt="all">All</button>
+            <button data-mkt="GM">GM</button>
+            <button data-mkt="USH">USH</button>
+          </div>
+        </div>
+        <div class="pv-control-group">
+          <span class="pv-label">Quarter</span>
+          <div class="seg-tabs" id="pvQFilter">
+            <button class="active" data-q="all">All</button>
+            <button data-q="Q1">Q1</button>
+            <button data-q="Q2">Q2</button>
+            <button data-q="Q3">Q3</button>
+          </div>
+        </div>
+        <div class="pv-control-group">
           <span class="pv-label">Data</span>
           <div class="seg-tabs" id="pvSrcToggle">
-            <button class="active" data-src="stages">By Stage</button>
-            <button data-src="creatives">By Creative</button>
+            <button data-src="stages">By Stage</button>
+            <button class="active" data-src="creatives">By Creative</button>
           </div>
         </div>
         <div class="pv-control-group">
@@ -4574,9 +4591,15 @@ const PV_DIMS = {
   creative: { label:'Creative', creativeOnly:true  },
 };
 
-let pvState = { src:'stages', rowDim:'stage', colDim:'q', metric:'imps', sortCol:'__total__', sortDir:-1 };
+let pvState = { src:'creatives', rowDim:'creative', colDim:'stage', metric:'imps', sortCol:'__total__', sortDir:-1, mkt:'all', q:'all' };
 
-function pvPool() { return pvState.src === 'creatives' ? AN_CREATIVES : AN_STAGES; }
+function pvPool() {
+  const raw = pvState.src === 'creatives' ? AN_CREATIVES : AN_STAGES;
+  return raw.filter(r =>
+    (pvState.mkt === 'all' || r.mkt === pvState.mkt) &&
+    (pvState.q   === 'all' || r.q   === pvState.q)
+  );
+}
 
 function pvAggregate(rows, metric) {
   const imps    = rows.reduce((s,r) => s+(r.imps  ||0), 0);
@@ -4619,12 +4642,13 @@ function pvUpdateSelects() {
     .map(([k, d]) => `<option value="${k}"${k===pvState.rowDim?' selected':''}>${d.label}</option>`).join('');
   document.getElementById('pvRowDim').innerHTML = rowOpts;
 
+  // All dims available as columns (stage is always valid for cross-tab)
   const colOpts = Object.entries(PV_DIMS)
-    .filter(([k, d]) => k !== pvState.rowDim && !d.creativeOnly)
+    .filter(([k]) => k !== pvState.rowDim)
     .map(([k, d]) => `<option value="${k}"${k===pvState.colDim?' selected':''}>${d.label}</option>`).join('');
   document.getElementById('pvColDim').innerHTML = colOpts;
   if (!colOpts.includes(`value="${pvState.colDim}"`)) {
-    pvState.colDim = Object.keys(PV_DIMS).find(k => k !== pvState.rowDim && !PV_DIMS[k].creativeOnly) || 'q';
+    pvState.colDim = Object.keys(PV_DIMS).find(k => k !== pvState.rowDim) || 'stage';
     document.getElementById('pvColDim').value = pvState.colDim;
   }
 
@@ -4691,9 +4715,10 @@ function renderPivot() {
 
   const tbody = `<tbody>
     ${rowVals.map(rv => {
-      const label = rowKey==='creative' && rv.length>55 ? rv.slice(0,52)+'…' : rv;
+      const display = rowKey==='creative' ? (offerLabel(rv)||rv) : rv;
+      const label   = display.length > 60 ? display.slice(0,57)+'…' : display;
       return `<tr>
-        <td class="pv-td-label" title="${rv.replace(/"/g,'&quot;')}">${label}</td>
+        <td class="pv-td-label" title="${display.replace(/"/g,'&quot;')}">${label}</td>
         ${colVals.map(cv=>`<td class="pv-td-val"${heat(matrix[rv][cv])}>${pvFmt(metric,matrix[rv][cv])}</td>`).join('')}
         <td class="pv-td-total">${pvFmt(metric,matrix[rv]['__total__'])}</td>
       </tr>`;
@@ -4718,11 +4743,30 @@ function renderPivot() {
 }
 
 /* ── Wire pivot controls ─────────────────────────────────── */
+document.getElementById('pvMktFilter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-mkt]');
+  if (!btn) return;
+  pvState.mkt = btn.dataset.mkt;
+  document.querySelectorAll('#pvMktFilter button').forEach(b => b.classList.toggle('active', b===btn));
+  pvState.sortCol = '__total__'; pvState.sortDir = -1;
+  renderPivot();
+});
+
+document.getElementById('pvQFilter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-q]');
+  if (!btn) return;
+  pvState.q = btn.dataset.q;
+  document.querySelectorAll('#pvQFilter button').forEach(b => b.classList.toggle('active', b===btn));
+  pvState.sortCol = '__total__'; pvState.sortDir = -1;
+  renderPivot();
+});
+
 document.getElementById('pvSrcToggle').addEventListener('click', e => {
   const btn = e.target.closest('[data-src]');
   if (!btn) return;
   pvState.src = btn.dataset.src;
-  if (pvState.src === 'stages' && pvState.rowDim === 'creative') pvState.rowDim = 'stage';
+  if (pvState.src === 'stages'    && pvState.rowDim === 'creative') { pvState.rowDim = 'stage'; pvState.colDim = 'q'; }
+  if (pvState.src === 'creatives' && pvState.rowDim !== 'creative') { pvState.rowDim = 'creative'; pvState.colDim = 'stage'; }
   document.querySelectorAll('#pvSrcToggle button').forEach(b => b.classList.toggle('active', b===btn));
   pvState.sortCol = '__total__'; pvState.sortDir = -1;
   renderPivot();
@@ -4754,10 +4798,11 @@ document.getElementById('pvExportBtn').addEventListener('click', () => {
   const metric = pvState.metric;
   const colVals = [...new Set(pool.map(r => r[colKey]).filter(Boolean))].sort();
   const rowVals = [...new Set(pool.map(r => r[rowKey]).filter(Boolean))];
+  const rowLabel = rv => rowKey === 'creative' ? (offerLabel(rv)||rv) : rv;
   const aoa = [
     [PV_DIMS[rowKey]?.label||rowKey, ...colVals, 'Total'],
     ...rowVals.map(rv => [
-      rv,
+      rowLabel(rv),
       ...colVals.map(cv => pvAggregate(pool.filter(r => r[rowKey]===rv && r[colKey]===cv), metric)),
       pvAggregate(pool.filter(r => r[rowKey]===rv), metric),
     ]),
