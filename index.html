@@ -11,6 +11,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  var b = document.getElementById('jsErrBanner');
+  if (!b) { b = document.createElement('div'); b.id = 'jsErrBanner'; b.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#c0392b;color:#fff;font:13px monospace;padding:10px 14px;white-space:pre-wrap;max-height:30vh;overflow:auto;'; document.body && document.body.appendChild(b); }
+  b.textContent += (msg + ' — ' + src + ':' + line + '\n');
+};
+window.addEventListener('unhandledrejection', function(e) {
+  window.onerror(String(e.reason), 'promise', 0, 0, e.reason);
+});
+</script>
 <style>
 /* ─── Design tokens ─────────────────────────────────────── */
 :root {
