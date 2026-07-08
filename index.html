@@ -3973,96 +3973,99 @@ window.__onTabSwitch = tab => {
 <script>
 /* ── One-Sheeter Generator ───────────────────────────────── */
 function generateOneSheet() {
-  const today = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'});
+  const today    = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'});
+  const todayLong= new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const selQ   = typeof ovQ   !== 'undefined' ? ovQ   : 'all';
   const selMkt = typeof ovMkt !== 'undefined' ? ovMkt : 'all';
 
-  // Determine which quarters to show
-  const allQs = ['Q1','Q2','Q3'];
-  const activeQs = selQ === 'all'
-    ? allQs.filter(q => PIVOT_DATA.quarters[q])
-    : [selQ];
+  const allQs    = ['Q1','Q2','Q3'];
+  const activeQs = selQ === 'all' ? allQs.filter(q => PIVOT_DATA.quarters[q]) : [selQ];
+  const qColors  = { Q1:'#2e7d32', Q2:'#1565c0', Q3:'#e65100' };
+  const qRanges  = { Q1:'Jan 1 – Mar 31, 2026', Q2:'Apr 1 – Jun 30, 2026', Q3:'Jul 1 – Present, 2026' };
 
-  const qRanges = { Q1:'Jan 1 – Mar 31, 2026', Q2:'Apr 1 – Jun 30, 2026', Q3:'Jul 1 – Present, 2026' };
-
-  // Build KPI block per quarter
-  function qBlock(q) {
-    const d = PIVOT_DATA.quarters[q];
-    if (!d) return '';
-    const gm = d.GM || {};
-    const ush = d.USH || {};
-    const imps   = (gm.imps||0) + (ush.imps||0);
-    const clicks = (gm.clicks||0) + (ush.clicks||0);
-    const orders = (gm.gmOrd||0) + (ush.gmOrd||0);
-    const spend  = (gm.spend||0) + (ush.spend||0);
-    const ctr    = imps ? clicks/imps : 0;
-    const cpc    = clicks ? spend/clicks : 0;
-    // GM Events = global spotlight signals (proxy for landing page visits)
-    const gmEvents = Math.round((gm.gmLpvr||0) * (gm.imps||0));
-    const hasSpend = spend > 0;
-    return `<div class="q-block">
-      <div class="q-block-header">${q} — ${qRanges[q]}</div>
-      <div class="q-kpis">
-        <div class="q-kpi"><div class="q-kpi-val">${FMT.abbr(imps)}</div><div class="q-kpi-lbl">IMPRESSIONS</div></div>
-        <div class="q-kpi"><div class="q-kpi-val">${FMT.abbr(gmEvents)}</div><div class="q-kpi-lbl">GM EVENTS</div></div>
-        <div class="q-kpi"><div class="q-kpi-val">${(ctr*100).toFixed(3)}%</div><div class="q-kpi-lbl">CTR</div></div>
-      </div>
-      <div class="q-kpis q-kpis-2">
-        <div class="q-kpi"><div class="q-kpi-val">${FMT.num(orders)}</div><div class="q-kpi-lbl">ORDER EVENTS</div></div>
-        <div class="q-kpi"><div class="q-kpi-val">${hasSpend ? FMT.dollar(spend) : '—'}</div><div class="q-kpi-lbl">TOTAL SPEND</div></div>
-        <div class="q-kpi"><div class="q-kpi-val">${hasSpend ? '$'+cpc.toFixed(2) : '—'}</div><div class="q-kpi-lbl">AVG. CPC</div></div>
-      </div>
-    </div>`;
-  }
-
-  // Top creatives helpers
   const mktFilter = r => selMkt === 'all' || r.mkt === selMkt;
-  const qFilter   = r => selQ === 'all' || r.q === selQ;
-  const crRows = AN_CREATIVES.filter(r => mktFilter(r) && qFilter(r));
+  const qFilter   = r => selQ   === 'all' || r.q   === selQ;
+  const crRows    = AN_CREATIVES.filter(r => mktFilter(r) && qFilter(r));
 
-  function topTable(rows, sortKey, label, valFmt) {
-    const sorted = [...rows].sort((a,b)=>(b[sortKey]||0)-(a[sortKey]||0)).slice(0,7);
-    if (!sorted.length) return '<p class="no-data">No data</p>';
-    return `<table class="os-table"><thead><tr><th>#</th><th>Creative / Offer</th><th>Qtr</th><th>${label}</th><th>Imps</th></tr></thead><tbody>
-      ${sorted.map((r,i)=>`<tr>
-        <td class="rank">${i+1}</td>
-        <td class="creative-cell"><span class="badge ${r.mkt.toLowerCase()}">${r.mkt}</span>${offerLabel(r.creative||r.stage)}</td>
-        <td><span class="badge ${r.q.toLowerCase()}">${r.q}</span></td>
-        <td class="val">${valFmt(r[sortKey]||0)}</td>
-        <td class="val-muted">${FMT.abbr(r.imps||0)}</td>
-      </tr>`).join('')}
-    </tbody></table>`;
+  // ── Aggregate totals ──
+  let totImps=0, totClicks=0, totOrders=0, totSpend=0, totLpvrWt=0;
+  let gmImps=0, gmOrd=0, ushImps=0, ushOrd=0;
+  activeQs.forEach(q => {
+    const d = PIVOT_DATA.quarters[q]; if (!d) return;
+    const gm=d.GM||{}, ush=d.USH||{};
+    if (selMkt==='all'||selMkt==='GM')  { totImps+=gm.imps||0; totClicks+=gm.clicks||0; totOrders+=gm.gmOrd||0; totSpend+=gm.spend||0; totLpvrWt+=(gm.gmLpvr||0)*(gm.imps||0); gmImps+=gm.imps||0; gmOrd+=gm.gmOrd||0; }
+    if (selMkt==='all'||selMkt==='USH') { totImps+=ush.imps||0; totClicks+=ush.clicks||0; totOrders+=ush.gmOrd||0; totSpend+=ush.spend||0; totLpvrWt+=(ush.gmLpvr||0)*(ush.imps||0); ushImps+=ush.imps||0; ushOrd+=ush.gmOrd||0; }
+  });
+  const totCtr   = totImps   ? totClicks/totImps   : 0;
+  const totLpvr  = totImps   ? totLpvrWt/totImps   : 0;
+  const totCpc   = totClicks ? totSpend/totClicks   : 0;
+  const totCpm   = totImps   ? (totSpend/totImps)*1000 : 0;
+  const hasSpend = totSpend > 0;
+
+  // ── Per-quarter breakdown rows ──
+  function qBreakdownRow(q) {
+    const d = PIVOT_DATA.quarters[q]; if (!d) return '';
+    const gm=d.GM||{}, ush=d.USH||{};
+    let imps=0, clicks=0, ord=0, spend=0, lpvrWt=0;
+    if (selMkt==='all'||selMkt==='GM')  { imps+=gm.imps||0; clicks+=gm.clicks||0; ord+=gm.gmOrd||0; spend+=gm.spend||0; lpvrWt+=(gm.gmLpvr||0)*(gm.imps||0); }
+    if (selMkt==='all'||selMkt==='USH') { imps+=ush.imps||0; clicks+=ush.clicks||0; ord+=ush.gmOrd||0; spend+=ush.spend||0; lpvrWt+=(ush.gmLpvr||0)*(ush.imps||0); }
+    const ctr  = imps ? clicks/imps : 0;
+    const lpvr = imps ? lpvrWt/imps : 0;
+    const cpc  = clicks ? spend/clicks : 0;
+    return `<tr>
+      <td><span class="q-dot" style="background:${qColors[q]}"></span><strong>${q}</strong></td>
+      <td>${FMT.abbr(imps)}</td>
+      <td>${(ctr*100).toFixed(3)}%</td>
+      <td>${FMT.num(ord)}</td>
+      <td>${(lpvr*100).toFixed(2)}%</td>
+      <td>${hasSpend && spend>0 ? FMT.dollar(spend) : '—'}</td>
+      <td>${hasSpend && cpc>0 ? '$'+cpc.toFixed(2) : '—'}</td>
+    </tr>`;
   }
 
-  function lpvrTable(rows) {
-    const sorted = [...rows].sort((a,b)=>(b.gmLpvr||0)-(a.gmLpvr||0)).slice(0,7);
-    if (!sorted.length) return '<p class="no-data">No data</p>';
-    return `<table class="os-table"><thead><tr><th>#</th><th>Creative / Offer</th><th>Segment</th><th>LPVR</th><th>CPC</th></tr></thead><tbody>
-      ${sorted.map((r,i)=>`<tr>
+  // ── Top 5 table builder ──
+  function top5(rows, sortKey, cols) {
+    const sorted = [...rows].sort((a,b)=>(b[sortKey]||0)-(a[sortKey]||0)).slice(0,5);
+    if (!sorted.length) return '<p class="no-data">No data available</p>';
+    return `<table class="os-table">
+      <thead><tr><th>#</th><th>Creative / Offer</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead>
+      <tbody>${sorted.map((r,i)=>`<tr class="${i%2===0?'even':''}">
         <td class="rank">${i+1}</td>
-        <td class="creative-cell"><span class="badge ${r.q.toLowerCase()}">${r.q}</span>${offerLabel(r.creative)||'—'}</td>
-        <td>${r.stage||'—'}</td>
-        <td class="val">${(r.gmLpvr*100).toFixed(1)}%</td>
-        <td class="val-muted">${r.cpc>0?'$'+r.cpc.toFixed(2):'—'}</td>
-      </tr>`).join('')}
-    </tbody></table>`;
+        <td class="cr-cell">
+          <div class="cr-badges"><span class="badge ${r.mkt.toLowerCase()}">${r.mkt}</span><span class="badge ${r.q.toLowerCase()}">${r.q}</span></div>
+          <div class="cr-name" title="${offerLabel(r.creative||r.stage)||'—'}">${offerLabel(r.creative||r.stage)||'—'}</div>
+        </td>
+        ${cols.map(c=>`<td class="val">${c.fmt(r[c.key]||0)}</td>`).join('')}
+      </tr>`).join('')}</tbody></table>`;
   }
 
-  // Auto-generate insights
-  const totAll = computeTotals('all','all');
-  const byOrders = [...crRows].sort((a,b)=>(b.gmOrd||0)-(a.gmOrd||0));
-  const topOrder = byOrders[0];
-  const topCtr   = [...crRows].sort((a,b)=>(b.ctr||0)-(a.ctr||0))[0];
-  const totSpend = activeQs.reduce((s,q)=>{const d=PIVOT_DATA.quarters[q];return s+((d?.GM?.spend||0)+(d?.USH?.spend||0));},0);
+  // ── Sorted creative lists for insights / recs ──
+  const byOrd  = [...crRows].sort((a,b)=>(b.gmOrd||0)-(a.gmOrd||0));
+  const byCtr  = [...crRows].sort((a,b)=>(b.ctr||0)-(a.ctr||0));
+  const byLpvr = [...crRows].sort((a,b)=>(b.gmLpvr||0)-(a.gmLpvr||0));
+  const topOrd  = byOrd[0],  topCtr = byCtr[0], topLpvr = byLpvr[0];
 
+  // ── Key Insights ──
   const insights = [
-    topOrder ? `<strong>Top Order Driver:</strong> "${offerLabel(topOrder.creative)}" (${topOrder.q}, ${topOrder.mkt}) generated ${FMT.num(topOrder.gmOrd)} orders on ${FMT.abbr(topOrder.imps)} impressions — highest order volume in the selected period.` : null,
-    topCtr   ? `<strong>Highest CTR Creative:</strong> "${offerLabel(topCtr.creative)}" (${topCtr.q}, ${topCtr.mkt}) achieved ${(topCtr.ctr*100).toFixed(3)}% CTR on ${FMT.abbr(topCtr.imps)} impressions.` : null,
-    totSpend > 0 ? `<strong>Overall Efficiency:</strong> ${FMT.dollar(totSpend)} total spend across ${activeQs.join(' + ')} at an average CPC of $${(totAll.spend&&totAll.clicks?totAll.spend/totAll.clicks:0).toFixed(2)}.` : null,
-    `<strong>Data Source:</strong> Flashtalking / Innovid DCO delivery data via BigQuery (crk-dco-dash.reporting_data.deliveries_view). Audience signals from floodlight spotlight columns.`,
+    topOrd  ? `<strong>Top Order Driver:</strong> "${offerLabel(topOrd.creative)}" (${topOrd.q}, ${topOrd.mkt}) led with <strong>${FMT.num(topOrd.gmOrd)} orders</strong> on ${FMT.abbr(topOrd.imps)} impressions.` : null,
+    topCtr  ? `<strong>Highest CTR:</strong> "${offerLabel(topCtr.creative)}" (${topCtr.q}, ${topCtr.mkt}) achieved <strong>${(topCtr.ctr*100).toFixed(3)}% CTR</strong>${topCtr.imps < 50000 ? ' — note limited delivery volume' : ' with strong delivery'}.` : null,
+    topLpvr && topLpvr.gmLpvr > 0 ? `<strong>Best Post-Click Quality:</strong> "${offerLabel(topLpvr.creative)}" (${topLpvr.q}, ${topLpvr.mkt}) had the highest LPVR at <strong>${(topLpvr.gmLpvr*100).toFixed(2)}%</strong>, indicating strong landing page alignment.` : null,
+    selMkt==='all' && gmImps>0 && ushImps>0 ? `<strong>Market Split:</strong> GM drove ${((gmImps/(gmImps+ushImps))*100).toFixed(0)}% of impressions and ${gmOrd+ushOrd>0?((gmOrd/(gmOrd+ushOrd))*100).toFixed(0)+'%':' —'} of orders; USH drove the remainder.` : null,
+    hasSpend ? `<strong>Overall Efficiency:</strong> ${FMT.dollar(totSpend)} invested across ${activeQs.join(' + ')} at an average CPC of <strong>$${totCpc.toFixed(2)}</strong> and CPM of <strong>$${totCpm.toFixed(2)}</strong>.` : null,
+    `<strong>Data Source:</strong> Flashtalking + Innovid DCO delivery via BigQuery. Spotlight signals used for LPVR and order attribution.`,
   ].filter(Boolean);
 
-  const titleQ = selQ === 'all' ? activeQs.join('-') : selQ;
+  // ── Recommendations ──
+  const recs = [];
+  if (topOrd) recs.push(`Prioritize budget toward <strong>"${offerLabel(topOrd.creative)}"</strong> — the top order driver — while monitoring frequency caps to avoid saturation.`);
+  if (topCtr && topCtr.creative !== topOrd?.creative) recs.push(`Scale <strong>"${offerLabel(topCtr.creative)}"</strong> (highest CTR) to additional placements or audiences; high click intent suggests strong offer-message fit.`);
+  if (topLpvr && topLpvr.gmLpvr > 0.02) recs.push(`Replicate the decision tree rules driving <strong>"${offerLabel(topLpvr.creative)}"</strong>'s high LPVR — this audience segment responds well post-click.`);
+  const lowEff = byOrd.filter(r => r.gmOrd > 0 && r.imps > 100000 && r.gmOrd/r.imps < 0.0001);
+  if (lowEff.length) recs.push(`${lowEff.length} creative${lowEff.length>1?'s':''} with high delivery but low order conversion (incl. "${offerLabel(lowEff[0].creative)}") may benefit from offer refresh or creative rotation.`);
+  if (activeQs.length > 1) recs.push(`Review the Trends tab for QoQ CTR and LPVR shifts to inform next quarter's creative strategy and budget allocation.`);
+  if (!recs.length) recs.push('Continue monitoring weekly delivery pacing; flag any creative with <0.03% CTR to the agency team for review or refresh.');
+
+  const titleQ  = selQ === 'all' ? activeQs.join(' + ') : selQ;
   const mktLabel = selMkt === 'all' ? 'GM + USH' : selMkt;
 
   const html = `<!DOCTYPE html>
@@ -4070,89 +4073,185 @@ function generateOneSheet() {
 <title>Cricket Wireless DCO One-Sheeter — ${titleQ} 2026</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Poppins', sans-serif; font-size: 11px; color: #1a1a1a; background: #fff; }
-  .page { width: 1100px; margin: 0 auto; padding: 24px 28px; }
-  /* Header */
-  .os-header { background: #0d0d0d; color: #fff; padding: 14px 20px; border-radius: 8px 8px 0 0; }
-  .os-header-title { font-size: 18px; font-weight: 800; color: #5BC500; letter-spacing: -.3px; }
-  .os-header-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
-  .section-label { font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #888; margin: 16px 0 8px; border-bottom: 1px solid #e8e8e8; padding-bottom: 5px; }
-  /* Quarter KPI blocks */
-  .q-row { display: flex; gap: 12px; margin-bottom: 4px; }
-  .q-block { flex: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e0e0e0; }
-  .q-block-header { background: #1a1a1a; color: #fff; padding: 7px 12px; font-size: 11px; font-weight: 700; }
-  .q-kpis { display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 12px 4px; gap: 6px; }
-  .q-kpis-2 { padding-top: 4px; border-top: 1px solid #f0f0f0; }
-  .q-kpi-val { font-size: 17px; font-weight: 800; color: #111; letter-spacing: -.5px; }
-  .q-kpi-lbl { font-size: 8.5px; font-weight: 600; letter-spacing: .8px; color: #888; text-transform: uppercase; margin-top: 1px; }
-  /* Tables */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px; }
-  .os-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-  .os-table th { background: #f5f5f5; padding: 5px 7px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #666; border-bottom: 1px solid #e0e0e0; }
-  .os-table td { padding: 5px 7px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-  .os-table tr:last-child td { border-bottom: none; }
-  .rank { color: #aaa; font-weight: 700; width: 18px; }
-  .val { font-weight: 700; color: #111; }
-  .val-muted { color: #888; }
-  .creative-cell { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-right: 4px; text-transform: uppercase; letter-spacing: .3px; }
-  .badge.q1 { background: #e8f5e9; color: #2e7d32; }
-  .badge.q2 { background: #e3f2fd; color: #1565c0; }
-  .badge.q3 { background: #fff3e0; color: #e65100; }
-  .badge.gm  { background: #f3e5f5; color: #6a1b9a; }
-  .badge.ush { background: #fff8e1; color: #f57f17; }
-  .col-title { font-size: 11px; font-weight: 700; color: #222; margin-bottom: 6px; }
-  /* Insights */
-  .insights-box { background: #f8f8f8; border-radius: 6px; padding: 12px 16px; }
-  .insights-box ul { padding-left: 16px; }
-  .insights-box li { margin-bottom: 6px; line-height: 1.55; }
-  .no-data { color: #aaa; font-size: 10px; padding: 8px 0; }
-  /* Footer */
-  .os-footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 9px; color: #aaa; }
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    @page { size: letter landscape; margin: 10mm; }
-    .page { width: 100%; padding: 0; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Poppins',sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
+  .page{width:1100px;margin:0 auto;padding:20px 26px}
+
+  /* ── Header ── */
+  .os-header{background:#0d0d0d;color:#fff;padding:13px 20px 12px;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:space-between}
+  .os-header-left{}
+  .os-logo{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5BC500;margin-bottom:3px}
+  .os-title{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px}
+  .os-sub{font-size:10px;color:#888;margin-top:2px}
+  .os-header-right{text-align:right}
+  .os-date{font-size:9px;color:#666;margin-bottom:4px}
+  .os-qbadge{display:inline-block;background:#5BC500;color:#000;font-size:9px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
+
+  /* ── Stats bar ── */
+  .stats-bar{display:grid;grid-template-columns:repeat(6,1fr);background:#f7f7f7;border:1px solid #e4e4e4;border-top:none;border-radius:0 0 8px 8px;margin-bottom:14px}
+  .stat{padding:10px 14px;border-right:1px solid #e4e4e4;text-align:center}
+  .stat:last-child{border-right:none}
+  .stat-val{font-size:19px;font-weight:800;color:#111;letter-spacing:-.6px;line-height:1}
+  .stat-val.green{color:#5BC500}
+  .stat-lbl{font-size:8px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:#999;margin-top:3px}
+
+  /* ── Section label ── */
+  .section-label{font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#aaa;margin:12px 0 7px;display:flex;align-items:center;gap:8px}
+  .section-label::after{content:'';flex:1;height:1px;background:#ececec}
+  .section-icon{width:13px;height:13px;opacity:.5}
+
+  /* ── Quarter breakdown ── */
+  .q-breakdown{margin-bottom:14px}
+  .q-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .qb-table{width:100%;border-collapse:collapse;font-size:10px}
+  .qb-table th{background:#fafafa;padding:5px 10px;text-align:left;font-size:8.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e8e8}
+  .qb-table td{padding:6px 10px;border-bottom:1px solid #f3f3f3;vertical-align:middle}
+  .qb-table tr:last-child td{border-bottom:none}
+  .qb-table tr:hover td{background:#fafff5}
+
+  /* ── Three-col creative tables ── */
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+  .tbl-wrap{border:1px solid #ebebeb;border-radius:6px;overflow:hidden}
+  .tbl-head{background:#1a1a1a;color:#fff;padding:7px 11px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .tbl-head-icon{font-size:11px}
+  .os-table{width:100%;border-collapse:collapse;font-size:9.5px}
+  .os-table th{background:#f5f5f5;padding:5px 8px;text-align:left;font-weight:600;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;color:#777;border-bottom:1px solid #e4e4e4}
+  .os-table td{padding:5px 8px;border-bottom:1px solid #f5f5f5;vertical-align:top}
+  .os-table tr.even td{background:#fafafa}
+  .os-table tr:last-child td{border-bottom:none}
+  .rank{color:#ccc;font-weight:800;font-size:11px;width:16px;padding-right:4px}
+  .val{font-weight:700;color:#111;white-space:nowrap}
+  .cr-cell{max-width:0}
+  .cr-badges{margin-bottom:2px}
+  .cr-name{font-size:9px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+  .badge{display:inline-block;font-size:7.5px;font-weight:700;padding:1px 5px;border-radius:3px;margin-right:3px;text-transform:uppercase;letter-spacing:.3px}
+  .badge.q1{background:#e8f5e9;color:#2e7d32}
+  .badge.q2{background:#e3f2fd;color:#1565c0}
+  .badge.q3{background:#fff3e0;color:#e65100}
+  .badge.gm {background:#f3e5f5;color:#6a1b9a}
+  .badge.ush{background:#fff8e1;color:#f57f17}
+  .no-data{color:#bbb;font-size:9px;padding:10px 8px}
+
+  /* ── Bottom two-col: insights + recs ── */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+  .insights-box,.recs-box{border-radius:6px;padding:11px 14px}
+  .insights-box{background:#f8f8f8;border:1px solid #ebebeb}
+  .recs-box{background:#f0fbea;border:1px solid #c5e8a8}
+  .box-title{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:8px}
+  .recs-box .box-title{color:#3a7d0a}
+  .insights-box ul,.recs-box ul{padding-left:14px}
+  .insights-box li,.recs-box li{margin-bottom:5px;line-height:1.5;font-size:9.5px}
+  .recs-box li{color:#2a5c07}
+
+  /* ── Footer ── */
+  .os-footer{margin-top:10px;padding-top:8px;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between;font-size:8.5px;color:#bbb}
+
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    @page{size:letter landscape;margin:8mm}
+    .page{width:100%;padding:0}
   }
 </style>
 </head>
 <body>
 <div class="page">
+
+  <!-- Header -->
   <div class="os-header">
-    <div class="os-header-title">Cricket Wireless — ${titleQ} 2026 DCO Internal Performance Review</div>
-    <div class="os-header-sub">Data updated ${today} · ${mktLabel} · Flashtalking / Innovid DCO</div>
-  </div>
-
-  <div class="section-label">Campaign Performance Overview</div>
-  <div class="q-row">
-    ${activeQs.map(q => qBlock(q)).join('')}
-  </div>
-
-  <div class="two-col" style="margin-top:14px">
-    <div>
-      <div class="section-label">Top Creatives — Orders</div>
-      <div class="col-title"></div>
-      ${topTable(crRows, 'gmOrd', 'Orders', v=>FMT.num(v))}
+    <div class="os-header-left">
+      <div class="os-logo">Cricket Wireless · DCO Performance</div>
+      <div class="os-title">${titleQ} 2026 — Internal Campaign Review</div>
+      <div class="os-sub">${mktLabel} · Flashtalking + Innovid · Data as of ${todayLong}</div>
     </div>
-    <div>
-      <div class="section-label">Top Creatives — CTR</div>
-      ${topTable(crRows, 'ctr', 'CTR', v=>(v*100).toFixed(3)+'%')}
-      <div class="section-label" style="margin-top:12px">Top Creatives — LPVR & CPC</div>
-      ${lpvrTable(crRows)}
+    <div class="os-header-right">
+      <div class="os-date">Prepared by Emily McAndrew · Argonaut</div>
+      <div class="os-qbadge">${titleQ} · ${mktLabel}</div>
     </div>
   </div>
 
-  <div class="section-label">Key Insights</div>
-  <div class="insights-box">
-    <ul>${insights.map(i=>`<li>${i}</li>`).join('')}</ul>
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-val">${FMT.abbr(totImps)}</div>
+      <div class="stat-lbl">Impressions</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">${FMT.abbr(totClicks)}</div>
+      <div class="stat-lbl">Clicks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val green">${(totCtr*100).toFixed(3)}%</div>
+      <div class="stat-lbl">CTR</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val green">${FMT.num(totOrders)}</div>
+      <div class="stat-lbl">GM Orders</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">${(totLpvr*100).toFixed(2)}%</div>
+      <div class="stat-lbl">Avg LPVR</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">${hasSpend ? FMT.dollar(totSpend) : '—'}</div>
+      <div class="stat-lbl">${hasSpend ? 'Total Spend' : 'Spend N/A'}</div>
+    </div>
   </div>
 
+  <!-- Quarter Breakdown -->
+  <div class="section-label">Quarter Breakdown</div>
+  <div class="q-breakdown">
+    <table class="qb-table">
+      <thead><tr><th>Quarter</th><th>Impressions</th><th>CTR</th><th>GM Orders</th><th>LPVR</th><th>Spend</th><th>CPC</th></tr></thead>
+      <tbody>
+        ${activeQs.map(q => qBreakdownRow(q)).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Top 5 Creative Tables -->
+  <div class="section-label">Top Creative Performance</div>
+  <div class="three-col">
+    <div class="tbl-wrap">
+      <div class="tbl-head"><span class="tbl-head-icon">🏆</span> Top 5 — GM Orders</div>
+      ${top5(crRows,'gmOrd',[
+        {key:'gmOrd',  label:'Orders', fmt: v => FMT.num(v)},
+        {key:'imps',   label:'Imps',   fmt: v => FMT.abbr(v)},
+      ])}
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><span class="tbl-head-icon">🖱</span> Top 5 — CTR</div>
+      ${top5(crRows,'ctr',[
+        {key:'ctr',    label:'CTR',    fmt: v => (v*100).toFixed(3)+'%'},
+        {key:'imps',   label:'Imps',   fmt: v => FMT.abbr(v)},
+      ])}
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><span class="tbl-head-icon">📍</span> Top 5 — LPVR</div>
+      ${top5(crRows,'gmLpvr',[
+        {key:'gmLpvr', label:'LPVR',   fmt: v => (v*100).toFixed(2)+'%'},
+        {key:'cpc',    label:'CPC',    fmt: v => v>0?'$'+v.toFixed(2):'—'},
+      ])}
+    </div>
+  </div>
+
+  <!-- Insights + Recommendations -->
+  <div class="two-col">
+    <div class="insights-box">
+      <div class="box-title">Key Insights</div>
+      <ul>${insights.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>
+    <div class="recs-box">
+      <div class="box-title">Recommendations</div>
+      <ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
   <div class="os-footer">
-    <span>Cricket Wireless DCO · ${mktLabel} · Ad Server: Flashtalking / Innovid · Data through ${today}</span>
-    <span>Prepared by: Emily McAndrew · Argonaut · ${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span>
+    <span>Cricket Wireless DCO · ${mktLabel} · Ad Server: Flashtalking / Innovid · Data through ${todayLong}</span>
+    <span>Emily McAndrew · Argonaut · crk-dco-dash.reporting_data.deliveries_view</span>
   </div>
+
 </div>
 <script>window.onload = function(){ window.print(); }<\/script>
 </body></html>`;
