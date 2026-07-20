@@ -1674,7 +1674,7 @@ body.compact .chart-card      { padding: 14px 16px; }
         </div>
         <span id="anRowCount" style="font-size:12px;color:var(--muted)"></span>
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-          <button class="btn-primary btn-sm" id="offerMapUploadBtn" title="Upload a two-column CSV or Excel file: column 1 = version name (as it appears in data), column 2 = friendly offer name">
+          <button class="btn-primary btn-sm" id="offerMapUploadBtn" title="Upload the DCO trafficker export (.xlsx/.csv). Maps FT Version Name to &quot;Tactic | Segment — Creative Offer Name&quot;">
             <svg-icon name="upload" size="13"></svg-icon> Offer Map
           </button>
           <div class="offer-map-chip" id="offerMapChip" style="display:none">
@@ -5182,16 +5182,19 @@ document.getElementById('offerMapFileInput').addEventListener('change', e => {
   const ext = file.name.split('.').pop().toLowerCase();
 
   function buildMapFromRows(headerRow, dataRows) {
-    const headers = headerRow.map(h => String(h || '').trim());
-    const keyCol  = headers.indexOf('Version Name');
-    const valCol  = headers.indexOf('Creative Offer Name');
-    const kIdx = keyCol  >= 0 ? keyCol  : 0;
-    const vIdx = valCol  >= 0 ? valCol  : 1;
+    const headers   = headerRow.map(h => String(h || '').trim());
+    const keyCol    = headers.indexOf('FT Version Name');
+    const offerCol  = headers.indexOf('Creative Offer Name');
+    const tacticCol = headers.indexOf('Tactic | Segment');
+    const kIdx = keyCol   >= 0 ? keyCol   : 0;
+    const oIdx = offerCol >= 0 ? offerCol : 1;
     const map = {};
     dataRows.forEach(row => {
-      const key = String(row[kIdx] || '').trim();
-      const val = String(row[vIdx] || '').trim();
-      if (key && val) map[key] = val;
+      const key   = String(row[kIdx] || '').trim();
+      const offer = String(row[oIdx] || '').trim();
+      if (!key || !offer) return; // skips blank/legend rows (e.g. the RESOURCES row)
+      const tactic = tacticCol >= 0 ? String(row[tacticCol] || '').trim() : '';
+      map[key] = tactic ? `${tactic} — ${offer}` : offer;
     });
     return map;
   }
