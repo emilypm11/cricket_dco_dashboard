@@ -2404,7 +2404,8 @@ async function gcsFetchObject(name) {
     { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
   );
   if (!res.ok) throw new Error(`Cloud Storage fetch failed (${res.status})`);
-  return res.arrayBuffer();
+  const ext = name.split('.').pop().toLowerCase();
+  return ext === 'csv' ? res.text() : res.arrayBuffer();
 }
 
 /* ── Load live data from BigQuery ────────────────────────── */
