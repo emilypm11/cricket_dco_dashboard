@@ -3574,11 +3574,22 @@ function updateOfferMapChip() {
 }
 
 /* ── Shared offer-map parsing (used by manual upload + cloud load) ── */
+function findHeaderIndex(headers, name) {
+  const target = name.trim().toLowerCase();
+  return headers.findIndex(h => String(h || '').trim().toLowerCase() === target);
+}
+
+/* GM and USH trafficking matrices are different templates and don't always
+   share exact header text — match case/whitespace-insensitively first.
+   If the key/offer columns still can't be found, don't silently guess
+   columns 0/1 (that produces a low, garbage count) — return matchedColumns:
+   false instead so the caller can warn instead of merging junk. ────────── */
 function buildOfferMapFromRows(headerRow, dataRows) {
   const headers   = headerRow.map(h => String(h || '').trim());
-  const keyCol    = headers.indexOf('FT Version Name');
-  const offerCol  = headers.indexOf('Creative Offer Name');
-  const tacticCol = headers.indexOf('Tactic | Segment');
+  const keyCol    = findHeaderIndex(headers, 'FT Version Name');
+  const offerCol  = findHeaderIndex(headers, 'Creative Offer Name');
+  const tacticCol = findHeaderIndex(headers, 'Tactic | Segment');
+  const matchedColumns = keyCol >= 0 && offerCol >= 0;
   const kIdx = keyCol   >= 0 ? keyCol   : 0;
   const oIdx = offerCol >= 0 ? offerCol : 1;
   const map = {};
@@ -3589,7 +3600,7 @@ function buildOfferMapFromRows(headerRow, dataRows) {
     const tactic = tacticCol >= 0 ? String(row[tacticCol] || '').trim() : '';
     map[key] = tactic ? `${tactic} — ${offer}` : offer;
   });
-  return map;
+  return { map, matchedColumns, rowCount: Object.keys(map).length };
 }
 
 function parseOfferMapCsvText(text) {
@@ -3599,7 +3610,7 @@ function parseOfferMapCsvText(text) {
       skipEmptyLines: true,
       complete(results) {
         const all = results.data;
-        resolve(all.length < 2 ? {} : buildOfferMapFromRows(all[0], all.slice(1)));
+        resolve(all.length < 2 ? { map:{}, matchedColumns:false, rowCount:0 } : buildOfferMapFromRows(all[0], all.slice(1)));
       },
       error: reject
     });
@@ -3610,7 +3621,7 @@ function parseOfferMapWorkbookBuffer(buffer) {
   const wb   = XLSX.read(buffer, { type: 'array' });
   const ws   = wb.Sheets[wb.SheetNames[0]];
   const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  return data.length < 2 ? {} : buildOfferMapFromRows(data[0], data.slice(1));
+  return data.length < 2 ? { map:{}, matchedColumns:false, rowCount:0 } : buildOfferMapFromRows(data[0], data.slice(1));
 }
 
 function parseOfferMapByExt(bufferOrText, ext) {
@@ -3622,14 +3633,17 @@ function parseOfferMapByExt(bufferOrText, ext) {
 /* ── Fetch + merge offer maps from one or more bucket objects ──
    `names` is assumed most-recently-updated-first (the order the
    picker lists them in); on overlapping keys, the more recently
-   updated file wins. ─────────────────────────────────────────── */
+   updated file wins. Returns per-file diagnostics so the caller can
+   flag a file whose columns couldn't be matched. ────────────────── */
 async function fetchAndMergeOfferMapObjects(names) {
-  const maps = await Promise.all(names.map(async name => {
+  const results = await Promise.all(names.map(async name => {
     const buffer = await gcsFetchObject(name);
     const ext = name.split('.').pop().toLowerCase();
-    return parseOfferMapByExt(buffer, ext);
+    const parsed = await parseOfferMapByExt(buffer, ext);
+    return { name, ...parsed };
   }));
-  return Object.assign({}, ...maps.slice().reverse());
+  const map = Object.assign({}, ...results.slice().reverse().map(r => r.map));
+  return { map, perFile: results.map(r => ({ name: r.name, matchedColumns: r.matchedColumns, rowCount: r.rowCount })) };
 }
 
 /* ── Auto-load offer map from Cloud Storage on sign-in ──────
@@ -3638,10 +3652,13 @@ async function fetchAndMergeOfferMapObjects(names) {
 async function autoLoadCloudOfferMap() {
   if (OFFER_MAP_SOURCE !== 'cloud' || !OFFER_MAP_CLOUD_OBJECTS.length) return;
   try {
-    OFFER_MAP = await fetchAndMergeOfferMapObjects(OFFER_MAP_CLOUD_OBJECTS);
+    const { map, perFile } = await fetchAndMergeOfferMapObjects(OFFER_MAP_CLOUD_OBJECTS);
+    OFFER_MAP = map;
     localStorage.setItem(OFFER_MAP_KEY, JSON.stringify(OFFER_MAP));
     updateOfferMapChip();
     if (typeof renderAnalytics === 'function') renderAnalytics();
+    perFile.filter(f => !f.matchedColumns).forEach(f =>
+      console.warn(`Offer map: couldn't find "FT Version Name"/"Creative Offer Name" columns in ${f.name} — used a positional guess, got ${f.rowCount} entries.`));
   } catch (e) {
     console.warn('Cloud offer map auto-load failed:', e);
   }
@@ -5655,7 +5672,12 @@ document.getElementById('offerMapFileInput').addEventListener('change', e => {
 
   readAs
     .then(data => parseOfferMapByExt(data, ext))
-    .then(map => applyOfferMap(map, 'manual'));
+    .then(({ map, matchedColumns, rowCount }) => {
+      if (!matchedColumns) {
+        console.warn(`Offer map: couldn't find "FT Version Name"/"Creative Offer Name" columns in ${file.name} — used a positional guess, got ${rowCount} entries.`);
+      }
+      applyOfferMap(map, 'manual');
+    });
 });
 
 /* ── Offer Map: load from Cloud Storage (multi-select) ───── */
@@ -5740,9 +5762,20 @@ offerMapCloudLoadBtn.addEventListener('click', () => {
   offerMapCloudLoadBtn.textContent = 'Loading…';
 
   fetchAndMergeOfferMapObjects(names)
-    .then(map => {
+    .then(({ map, perFile }) => {
       applyOfferMap(map, 'cloud', names);
-      closeOfferMapCloudPicker();
+      const unmatched = perFile.filter(f => !f.matchedColumns);
+      if (unmatched.length) {
+        // Keep the modal open and explain which file(s) didn't have the expected
+        // columns, instead of silently merging a low/garbage count from a guess.
+        offerMapCloudError.textContent =
+          `Loaded ${perFile.length} file(s), ${Object.keys(map).length} total offers. ` +
+          `Couldn't find "FT Version Name"/"Creative Offer Name" columns in: ` +
+          `${unmatched.map(f => `${f.name} (${f.rowCount} guessed)`).join(', ')} — check those column headers.`;
+        offerMapCloudError.style.display = '';
+      } else {
+        closeOfferMapCloudPicker();
+      }
     })
     .catch(err => {
       offerMapCloudError.textContent = `Couldn't load selected file(s): ${err.message}`;
