@@ -2608,7 +2608,7 @@ function parseDeliveryReportCsv(text) {
   });
 }
 
-function aggregateDeliveryRows(rows, into) {
+function aggregateDeliveryRows(rows, into, dailyInto) {
   rows.forEach(row => {
     const q = quarterFromActivityDate(row.activity_date);
     if (!q) return;
@@ -2620,6 +2620,12 @@ function aggregateDeliveryRows(rows, into) {
     into[q][mkt].imps   += imps;
     into[q][mkt].clicks += clicks;
     into[q][mkt].spend  += spend;
+
+    if (dailyInto && row.activity_date) {
+      const key = row.activity_date; // 'YYYY-MM-DD'
+      dailyInto[key] = dailyInto[key] || { q, imps: 0 };
+      dailyInto[key].imps += imps;
+    }
   });
   return into;
 }
@@ -2635,12 +2641,15 @@ async function loadCloudDeliveryFallback() {
     }));
 
     const agg = {};
-    rowSets.forEach(rows => aggregateDeliveryRows(rows, agg));
+    const dailyAgg = {};
+    rowSets.forEach(rows => aggregateDeliveryRows(rows, agg, dailyAgg));
 
+    const gapFlights = [];
     Object.keys(agg).forEach(q => {
       const existing  = PIVOT_DATA.quarters[q];
       const hasBqData = existing && ((existing.GM?.imps || 0) + (existing.USH?.imps || 0) > 0);
       if (hasBqData) return; // BigQuery already covers this quarter — don't overwrite it
+      gapFlights.push(q);
 
       const buildMkt = mkt => {
         const d = agg[q][mkt];
@@ -2656,6 +2665,24 @@ async function loadCloudDeliveryFallback() {
       };
       PIVOT_DATA.quarters[q] = { GM: buildMkt('GM'), USH: buildMkt('USH') };
     });
+
+    // Real per-day totals (from activity_date) for the daily trend chart —
+    // only for quarters that are actual gaps, same rule as above.
+    if (gapFlights.length) {
+      const newDailyRows = Object.keys(dailyAgg)
+        .filter(dateStr => gapFlights.includes(dailyAgg[dateStr].q))
+        .map(dateStr => {
+          const d = new Date(dateStr + 'T00:00:00');
+          return {
+            q: dailyAgg[dateStr].q, d,
+            label: d.toLocaleDateString('en-US', { month:'short', day:'numeric' }),
+            imps: dailyAgg[dateStr].imps,
+            _source: 'cloud-reports',
+          };
+        })
+        .sort((a, b) => a.d - b.d);
+      DAILY_DATA = DAILY_DATA.filter(r => !gapFlights.includes(r.q)).concat(newDailyRows);
+    }
 
     if (typeof renderOverview === 'function') renderOverview();
   } catch (e) {
@@ -3218,7 +3245,7 @@ function buildDailyData() {
   }
   return rows;
 }
-const DAILY_DATA = buildDailyData();
+let DAILY_DATA = buildDailyData();
 
 /* ── Data aggregation helpers ───────────────────────────── */
 function filterQuarters(qSel) {
