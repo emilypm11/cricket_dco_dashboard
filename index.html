@@ -1693,7 +1693,7 @@ body.compact .chart-card      { padding: 14px 16px; }
             <span id="offerMapChipLabel"></span>
             <button class="offer-map-chip-clear" id="offerMapClearBtn" title="Remove offer map">✕</button>
           </div>
-          <button class="btn-primary btn-sm" id="perfDataUploadBtn" title="Upload a delivery report with named Spotlight columns (Flight, Segment, Strategy, Creative Offer Name, Total Ads Requested, Clicks, Total Cost, order & LPVR pixel counts) to fill in quarters BigQuery is missing — including orders and LPVR, which the automatic Cloud Storage reports don't have.">
+          <button class="btn-primary btn-sm" id="perfDataUploadBtn" title="Upload a delivery report with named Spotlight columns (Flight, Segment, Strategy, Creative Offer Name, Total Ads Requested, Clicks, Total Cost, order & LPVR pixel counts) to fill in quarters BigQuery is missing — including orders and LPVR, which the automatic Cloud Storage reports don't have. Include an Activity Date (or Date) column to also populate the daily trend chart.">
             <svg-icon name="upload" size="13"></svg-icon> Performance Data
           </button>
           <div class="offer-map-chip" id="perfDataChip" style="display:none">
@@ -2699,7 +2699,9 @@ async function loadCloudDeliveryFallback() {
    Name, Total Ads Requested, Clicks, Total Cost, Cookie ID Reach:
    Total Ad Reach, CKT_bNON_HISPANIC_ORDER Count, CKT_bHISPANIC_ORDER
    Count, CKT_bNON_HISPANIC_GLOBAL_RT Count, CKT_bHISPANIC_GLOBAL_RT
-   Count. Only the aggregated result (not the raw rows) is persisted,
+   Count. An optional Activity Date (or Date) column also populates
+   the daily trend chart for the gap quarter — skipped gracefully if
+   absent. Only the aggregated result (not the raw rows) is persisted,
    keyed by Flight, so re-uploading one quarter's file doesn't wipe
    out another quarter uploaded earlier. ─────────────────────────── */
 const PERF_DATA_KEY = 'crkt_manual_perf_data_v1';
@@ -2722,7 +2724,7 @@ function quarterIsMissingFromBigQuery(flight) {
 }
 
 function parseXlsxRowsHeaderMode(buffer) {
-  const wb = XLSX.read(buffer, { type: 'array' });
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const ws = wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(ws, { defval: '' });
 }
@@ -2733,7 +2735,34 @@ function parsePerformanceRowsByExt(bufferOrText, ext) {
     : Promise.resolve(parseXlsxRowsHeaderMode(bufferOrText));
 }
 
+/* Optional per-row date column (for the daily trend chart) — several
+   reasonable header spellings, matched case/whitespace-insensitively.
+   Not required: if no matching column is found, day-level data is
+   simply skipped for that upload. */
+function findRowKey(row, candidates) {
+  const keys = Object.keys(row);
+  for (const cand of candidates) {
+    const target = cand.trim().toLowerCase();
+    const found = keys.find(k => k.trim().toLowerCase() === target);
+    if (found) return found;
+  }
+  return null;
+}
+
+function parseFlexibleDate(value) {
+  if (!value) return null;
+  if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+  const str = String(value).trim();
+  if (!str) return null;
+  const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+  const parsed = new Date(str);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function aggregateManualPerformanceRows(rows) {
+  const dateKey = rows.length ? findRowKey(rows[0], ['Activity Date', 'Date', 'activity_date']) : null;
+
   const groups = {}; // Flight -> raw rows
   rows.forEach(row => {
     const flight = (row['Flight'] || '').trim();
@@ -2745,12 +2774,14 @@ function aggregateManualPerformanceRows(rows) {
   const stagesByFlight      = {};
   const anStagesByFlight    = {};
   const anCreativesByFlight = {};
+  const dailyByFlight       = {};
 
   Object.keys(groups).forEach(flight => {
     const flightRows = groups[flight];
 
     // -- quarter totals (mirrors the BigQuery quarters query: orders combined, USH left at 0)
     let imps = 0, clicks = 0, gmOrdSum = 0, hmOrdSum = 0, gmRtSum = 0, hmRtSum = 0, spend = 0;
+    const dailyImpsByDate = {};
     flightRows.forEach(r => {
       imps     += numCol(r, 'Total Ads Requested');
       clicks   += numCol(r, 'Clicks');
@@ -2759,7 +2790,20 @@ function aggregateManualPerformanceRows(rows) {
       gmRtSum  += numCol(r, 'CKT_bNON_HISPANIC_GLOBAL_RT Count');
       hmRtSum  += numCol(r, 'CKT_bHISPANIC_GLOBAL_RT Count');
       spend    += numCol(r, 'Total Cost');
+
+      if (dateKey) {
+        const dateObj = parseFlexibleDate(r[dateKey]);
+        if (dateObj) {
+          const dStr = dateObj.toISOString().slice(0, 10);
+          dailyImpsByDate[dStr] = (dailyImpsByDate[dStr] || 0) + numCol(r, 'Total Ads Requested');
+        }
+      }
     });
+    if (dateKey) {
+      dailyByFlight[flight] = Object.keys(dailyImpsByDate)
+        .sort()
+        .map(dStr => ({ dateStr: dStr, imps: dailyImpsByDate[dStr] }));
+    }
     const orders = gmOrdSum + hmOrdSum;
     quartersByFlight[flight] = {
       GM:  { imps, clicks, gmOrd: orders, hmOrd: 0, ctr: imps ? clicks/imps : 0, gmLpvr: imps ? (gmRtSum+hmRtSum)/imps : 0, gmCvr: clicks ? orders/clicks : 0, spend, cpc: clicks ? spend/clicks : 0 },
@@ -2844,16 +2888,17 @@ function aggregateManualPerformanceRows(rows) {
     }));
   });
 
-  return { quartersByFlight, stagesByFlight, anStagesByFlight, anCreativesByFlight };
+  return { quartersByFlight, stagesByFlight, anStagesByFlight, anCreativesByFlight, dailyByFlight };
 }
 
 function mergePerfAggregates(existing, incoming) {
-  const base = existing || { quartersByFlight:{}, stagesByFlight:{}, anStagesByFlight:{}, anCreativesByFlight:{} };
+  const base = existing || { quartersByFlight:{}, stagesByFlight:{}, anStagesByFlight:{}, anCreativesByFlight:{}, dailyByFlight:{} };
   return {
     quartersByFlight:    { ...base.quartersByFlight,    ...incoming.quartersByFlight },
     stagesByFlight:      { ...base.stagesByFlight,      ...incoming.stagesByFlight },
     anStagesByFlight:    { ...base.anStagesByFlight,    ...incoming.anStagesByFlight },
     anCreativesByFlight: { ...base.anCreativesByFlight, ...incoming.anCreativesByFlight },
+    dailyByFlight:       { ...base.dailyByFlight,       ...incoming.dailyByFlight },
   };
 }
 
@@ -2864,6 +2909,7 @@ function clearManualPerformanceFlights() {
   PIVOT_DATA.stages = PIVOT_DATA.stages.filter(r => r._source !== 'manual-upload');
   AN_STAGES         = AN_STAGES.filter(r => r._source !== 'manual-upload');
   AN_CREATIVES      = AN_CREATIVES.filter(r => r._source !== 'manual-upload');
+  DAILY_DATA        = DAILY_DATA.filter(r => r._source !== 'manual-upload');
 }
 
 /* Apply persisted manual data to whichever flights BigQuery is still missing */
@@ -2885,6 +2931,13 @@ function applyManualPerformanceData() {
     }
     if (MANUAL_PERF_DATA.anCreativesByFlight[flight]) {
       AN_CREATIVES = AN_CREATIVES.filter(r => r.q !== flight).concat(MANUAL_PERF_DATA.anCreativesByFlight[flight]);
+    }
+    if (MANUAL_PERF_DATA.dailyByFlight?.[flight]?.length) {
+      const newDailyRows = MANUAL_PERF_DATA.dailyByFlight[flight].map(({ dateStr, imps }) => {
+        const d = new Date(dateStr + 'T00:00:00');
+        return { q: flight, d, label: d.toLocaleDateString('en-US', { month:'short', day:'numeric' }), imps, _source: 'manual-upload' };
+      });
+      DAILY_DATA = DAILY_DATA.filter(r => r.q !== flight).concat(newDailyRows);
     }
   });
   if (typeof renderOverview  === 'function') renderOverview();
