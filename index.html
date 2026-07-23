@@ -654,6 +654,20 @@ svg { display: block; }
 .tr-delta-up      { color: var(--good); }
 .tr-delta-down    { color: var(--bad);  }
 .tr-delta-neutral { color: var(--muted); }
+.tr-hit { cursor: crosshair; }
+.tr-tooltip {
+  position: fixed; z-index: 400; pointer-events: none;
+  display: none;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  font-family: var(--font-b); font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  white-space: nowrap;
+}
+.tr-tooltip-date { font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+.tr-tooltip-row  { display: flex; align-items: center; gap: 6px; color: var(--muted); line-height: 1.6; }
+.tr-tooltip-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tr-tooltip-val  { font-weight: 700; color: var(--fg); margin-left: auto; padding-left: 10px; }
 .tr-daily-notice {
   margin-top: 12px;
   background: var(--blue-soft);
@@ -2122,6 +2136,7 @@ body.compact .chart-card      { padding: 14px 16px; }
         <div id="trChartArea"></div>
         <div class="tr-legend" id="trLegend"></div>
       </div>
+      <div id="trTooltip" class="tr-tooltip"></div>
 
       <div id="trDailyNotice" style="display:none" class="tr-daily-notice"></div>
 
@@ -4970,6 +4985,7 @@ let trState   = { metric:'imps', mkt:'all', gran:'quarterly', quarters:['Q1','Q2
 let trDailyData = [];
 let trDailyLoaded = false;
 let trDailyAttempted = false;
+let trTooltipPoints  = []; // set fresh by trBuildSvg on every render
 
 function trGetVal(q, mkt, metric) {
   let rows = AN_STAGES;
@@ -5065,14 +5081,6 @@ function trBuildSvg(series, fmtFn, direction) {
       });
     }
 
-    /* Invisible hover hit-targets with a date+value tooltip — rendered for
-       every point regardless of N, so hovering the line works in daily mode
-       (90+ points) too, not just when visible dots are shown. */
-    s.points.forEach((v, i) => {
-      const x = xOf(i), y = yOf(v);
-      svg += `<circle cx="${x}" cy="${y}" r="7" fill="transparent" stroke="none"><title>${s.label} — ${labels[i]}: ${fmtFn(v)}</title></circle>`;
-    });
-
     /* QoQ deltas (quarterly mode only) */
     if (N <= 6) {
       for (let i = 0; i < N-1; i++) {
@@ -5089,6 +5097,22 @@ function trBuildSvg(series, fmtFn, direction) {
         }
       }
     }
+  });
+
+  /* Full-height, invisible per-column hit targets for the custom hover
+     tooltip (built/positioned in JS — see trChartArea mousemove handler).
+     One rect per x-index spans the gap between neighboring points, so the
+     whole chart width is hoverable, not just exact point coordinates.
+     Appended last so they paint above the lines/dots and actually receive
+     the pointer events. */
+  trTooltipPoints = labels.map((lb, i) => ({
+    date: lb,
+    entries: series.map(s => ({ label: s.label, color: s.color, value: fmtFn(s.points[i]) })),
+  }));
+  const colW = N > 1 ? cW / (N - 1) : cW;
+  labels.forEach((lb, i) => {
+    const rectX = xOf(i) - colW / 2;
+    svg += `<rect class="tr-hit" data-idx="${i}" x="${rectX}" y="${PT}" width="${colW}" height="${cH}" fill="transparent"/>`;
   });
 
   svg += '</svg>';
@@ -5240,7 +5264,44 @@ async function tryLoadTrendDailyData() {
   }
 }
 
-/* ── Wire trends controls ────────────────────────────────── */
+/* ── Trends chart hover tooltip ──────────────────────────────
+   trChartArea's innerHTML is replaced on every render, so listeners are
+   delegated on the stable container rather than the SVG hit-rects
+   themselves; trTooltipPoints is refreshed by trBuildSvg each render. */
+const trChartAreaEl = document.getElementById('trChartArea');
+const trTooltipEl   = document.getElementById('trTooltip');
+
+trChartAreaEl.addEventListener('mousemove', e => {
+  const hit = e.target.closest('.tr-hit');
+  if (!hit) { trTooltipEl.style.display = 'none'; return; }
+  const data = trTooltipPoints[Number(hit.dataset.idx)];
+  if (!data) { trTooltipEl.style.display = 'none'; return; }
+
+  trTooltipEl.innerHTML = `
+    <div class="tr-tooltip-date">${data.date}</div>
+    ${data.entries.map(en => `
+      <div class="tr-tooltip-row">
+        <span class="tr-tooltip-dot" style="background:${en.color}"></span>
+        <span>${en.label}</span>
+        <span class="tr-tooltip-val">${en.value}</span>
+      </div>`).join('')}
+  `;
+  trTooltipEl.style.display = 'block';
+
+  const pad = 14;
+  let left = e.clientX + pad;
+  let top  = e.clientY + pad;
+  const tw = trTooltipEl.offsetWidth, th = trTooltipEl.offsetHeight;
+  if (left + tw > window.innerWidth)  left = e.clientX - tw - pad;
+  if (top  + th > window.innerHeight) top  = e.clientY - th - pad;
+  trTooltipEl.style.left = `${left}px`;
+  trTooltipEl.style.top  = `${top}px`;
+});
+
+trChartAreaEl.addEventListener('mouseleave', () => {
+  trTooltipEl.style.display = 'none';
+});
+
 document.getElementById('trMktFilter').addEventListener('click', e => {
   const btn = e.target.closest('[data-mkt]');
   if (!btn) return;
