@@ -21,12 +21,17 @@ The earlier blocker doesn't apply here.
 
 ## Decisions confirmed with Emily
 
-- **Vocabulary**: exactly 3 known initiative labels — "Do the Most",
-  "Deal Drop", "Strike Sale". Anything else falls into a generic
-  "Other" bucket rather than being guessed at or expanded on
-  speculatively.
+- **Vocabulary**: 3 known initiative needles — "Do the Most", "Deal
+  Drop", "Strike Sale". Anything else falls into a generic "Other"
+  bucket rather than being guessed at or expanded on speculatively.
 - **Match position**: case-insensitive substring match **anywhere** in
   the Creative Offer Name (not restricted to a prefix).
+- **Deal Drop / Strike Sale merged (2026-09-16)**: Emily considers
+  these the same initiative in practice, so both needles map to one
+  shared label, `"Deal Drop / Strike Sale"`, instead of two separate
+  rows in the pivot. Still matched as two distinct needles internally
+  (a Creative Offer Name will only ever contain one or the other, never
+  both) — only the output *label* is merged, not the matching logic.
 
 ## Implementation
 
@@ -37,9 +42,10 @@ The earlier blocker doesn't apply here.
    `CRKT [job#] [Quarter] [Description]_[Platform]_[Dimensions]` — so
    "Deal_Drop" or "Deal-Drop" still match "Deal Drop" without expanding
    the 3-item vocabulary itself).
-2. Checks the normalized string for each of the 3 needles in order,
-   returns the first hit's label, or `PV_INITIATIVE_OTHER` ("Other") if
-   none match.
+2. Checks the normalized string against each needle in order, returns
+   the first hit's label (Deal Drop and Strike Sale both resolve to the
+   same merged label — see above), or `PV_INITIATIVE_OTHER` ("Other")
+   if none match.
 
 `initiative` was added to `PV_DIMS` as a `creativeOnly:true` dimension
 (same restriction as the existing `creative` dimension — Initiative can
@@ -77,3 +83,11 @@ separators, an underscore-delimited real-world-style Creative ID with
 input (both correctly "Other"). 7 of 8 passed exactly as expected; the
 8th (the deliberately-unrealistic no-delimiter "StrikeSale" case) is
 the documented limitation above, not a defect.
+
+After the Deal Drop/Strike Sale merge, re-verified against 5 cases
+covering all 3 needles plus a no-match case: "Do the Most" still
+resolves on its own, both "DEAL DROP" (hyphen-separated) and "Strike
+Sale" (space-separated) correctly resolve to the same merged
+`"Deal Drop / Strike Sale"` label, an underscore-delimited real-world-
+style ID still resolves correctly, and an unrelated name still falls
+through to "Other". All 5 passed.

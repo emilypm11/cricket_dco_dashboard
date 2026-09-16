@@ -9274,17 +9274,22 @@ const PV_DIMS = {
    dimensions on the Benchmarks tab. This is why it's buildable for Pivot
    at all: Pivot's rows already carry `creative` (BigQuery's Creative
    Offer Name), so there's no second dataset to bridge to, just text to
-   parse. Confirmed with Emily: only these 3 known initiative labels,
+   parse. Confirmed with Emily: only these known initiative labels,
    matched case-insensitively anywhere in the name; anything else falls
    into a generic "Other" bucket rather than being guessed at. Hyphens/
    underscores are normalized to spaces before matching (this codebase's
    naming conventions use underscores heavily — see CLAUDE.md — so
    "Deal_Drop" and "Deal-Drop" still match "Deal Drop" without expanding
-   the vocabulary itself). See specs/pivot-initiative.md. */
+   the vocabulary itself). See specs/pivot-initiative.md.
+
+   Deal Drop and Strike Sale share one label ("Deal Drop / Strike Sale")
+   per Emily — she considers them the same initiative in practice — while
+   still matching on both needles, since a Creative Offer Name will only
+   ever contain one or the other, never both. */
 const PV_INITIATIVES = [
-  { label:'Do the Most', needle:'do the most' },
-  { label:'Deal Drop',   needle:'deal drop'   },
-  { label:'Strike Sale', needle:'strike sale' },
+  { label:'Do the Most',              needle:'do the most' },
+  { label:'Deal Drop / Strike Sale',  needle:'deal drop'   },
+  { label:'Deal Drop / Strike Sale',  needle:'strike sale' },
 ];
 const PV_INITIATIVE_OTHER = 'Other';
 function pvNormalizeForMatch(s) {
