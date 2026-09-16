@@ -1,8 +1,11 @@
-# Spec: Initiative dimension on Pivot
+# Spec: Initiative & Offer Type dimensions on Pivot
 
-Status: Implemented
-Related file: `display-dashboard.html` (`PV_INITIATIVES`, `pvExtractInitiative`,
-`pvNormalizeForMatch`, `PV_DIMS.initiative`, `pvPool`)
+Status: Implemented (redesigned 2026-09-16 against real trafficker data —
+see "Redesign" below; original text-matching approach is superseded)
+Related files: `display-dashboard.html` and `index.html` (kept identical —
+`PV_INITIATIVES`, `PV_OFFER_TYPES`, `pvExtractInitiative`,
+`pvExtractOfferType`, `pvNormalizeForMatch`, `pvWordsOf`,
+`pvContainsPhrase`, `PV_DIMS.initiative`, `PV_DIMS.offerType`, `pvPool`)
 
 ## Problem
 
@@ -10,84 +13,123 @@ Emily asked whether Pivot could split performance by Deal Drop/Strike
 Sale vs. other initiatives. The earlier Benchmarks-tab work
 (`specs/benchmarks-tab.md`) flagged Pivot as blocked: its dimensions
 come from BigQuery's `Creative Offer Name`, a different ID space from
-the crosstab's `Creative ID`, with no established mapping between them
-— the same problem that limits Asset Links' Cloudflare matching.
+the crosstab's `Creative ID`, with no established mapping between them.
 
-Emily clarified: the initiative label is actually embedded **inside**
-the Creative Offer Name string itself (e.g. "Do the Most", "Deal Drop",
-"Strike Sale"). That changes the picture entirely — this isn't a join
-across two datasets, it's parsing a string Pivot's rows already carry.
-The earlier blocker doesn't apply here.
+Emily clarified: the initiative label is embedded **inside** the
+Creative Offer Name string itself, so this isn't a cross-dataset join —
+it's parsing a string Pivot's rows already carry.
 
-## Decisions confirmed with Emily
+## First attempt and what was wrong with it (2026-09-16, superseded same day)
 
-- **Vocabulary**: 3 known initiative needles — "Do the Most", "Deal
-  Drop", "Strike Sale". Anything else falls into a generic "Other"
-  bucket rather than being guessed at or expanded on speculatively.
-- **Match position**: case-insensitive substring match **anywhere** in
-  the Creative Offer Name (not restricted to a prefix).
-- **Deal Drop / Strike Sale merged (2026-09-16)**: Emily considers
-  these the same initiative in practice, so both needles map to one
-  shared label, `"Deal Drop / Strike Sale"`, instead of two separate
-  rows in the pivot. Still matched as two distinct needles internally
-  (a Creative Offer Name will only ever contain one or the other, never
-  both) — only the output *label* is merged, not the matching logic.
+The first version matched 3 literal needles — "do the most", "deal
+drop", "strike sale" — as case-insensitive substrings, with hyphens/
+underscores normalized to spaces. It shipped, then **every single row
+showed "Other"** in production. The root cause, found only after
+reading Emily's real trafficker file (`Argonaut - Cricket DCO
+Trafficker (2026).xlsx`, "Creative Offer Name" column): real names are
+**camelCase-squashed with zero delimiter between words** — e.g.
+`Q3-DoTheMost-Offer-4Linesfor$25/mo.each-...` — not
+"Do The Most" or "Do-The-Most". The original spec had explicitly called
+this exact pattern "deliberately unrealistic" and declined to guard
+against it. That assumption was wrong, confirmed by real data, and is
+retracted here rather than left standing.
+
+## Redesign, based on real data
+
+Reading actual rows from the trafficker file's "Creative Taxonomy" (AD),
+"Creative Campaign Initiative" (AE), and "Creative Offer Name" (AJ)
+columns revealed the real structure. "Creative Offer Name" follows a
+hyphen-delimited pattern:
+
+```
+[Quarter]-[Campaign Initiative]-[Offer Type]-[Messaging]-...
+```
+
+e.g. `Q3-DoTheMost-Offer-4Linesfor$25/mo.each-4/$25-None-DCOText-Led_None_4/$25`
+or `Q3-BTS-CricketDealDrop-FreePhone-None-SamsungA37-SamsungA375G_...`.
+
+Critically, **Campaign Initiative and Offer Type are independent axes**
+— a real row can be BTS+Offer, BTS+CricketDealDrop, Do The Most+Brand,
+Do The Most+CricketDealDrop, etc. This matches exactly what Emily
+described: *"there is Do the Most, BTS, but then Cricket Deal Drop is
+sometimes part of Do the most and BTS"* — Cricket Deal Drop isn't a
+4th initiative bucket, it's a value on a second, orthogonal dimension.
+
+### Decisions confirmed with Emily
+
+- **Initiative** = Do the Most / BTS / Other — matches the real
+  "Creative Campaign Initiative" column's actual values in this file.
+  Deal Drop and Strike Sale are removed from this dimension entirely.
+- **Offer Type** (new, separate `PV_DIMS` entry) = Cricket Deal Drop /
+  Brand / Offer / Apple / Other — an independent dimension, combinable
+  with Initiative in Pivot's Rows/Columns pickers (e.g. Rows=Initiative,
+  Columns=Offer Type). "Strike Sale" is folded into the "Cricket Deal
+  Drop" label here too, carrying over Emily's earlier decision that the
+  two are the same thing in practice, even though "strike sale" hasn't
+  actually appeared in the real data checked so far.
+- **Static vs. Animated, and device model, explicitly deferred.** Both
+  only exist in the trafficker file's "Creative Taxonomy" column, which
+  is **not** present anywhere in Pivot's BigQuery data (confirmed
+  absent from "Creative Offer Name" itself — "Animated"/"Static" is a
+  token Creative Taxonomy has that Creative Offer Name does not).
+  Getting it into Pivot would need a new lookup-join capability Pivot
+  doesn't have today (parallel to the crosstab's Lookup Table feature,
+  but keyed on Creative Offer Name instead of Creative ID) — Emily
+  chose to hold off on that scope increase for now.
 
 ## Implementation
 
-`pvExtractInitiative(creativeOfferName)`:
-1. Normalizes the name via `pvNormalizeForMatch` — lowercases it and
-   collapses hyphens/underscores into spaces (this codebase's own
-   naming conventions, per `CLAUDE.md`, use underscores heavily — e.g.
-   `CRKT [job#] [Quarter] [Description]_[Platform]_[Dimensions]` — so
-   "Deal_Drop" or "Deal-Drop" still match "Deal Drop" without expanding
-   the 3-item vocabulary itself).
-2. Checks the normalized string against each needle in order, returns
-   the first hit's label (Deal Drop and Strike Sale both resolve to the
-   same merged label — see above), or `PV_INITIATIVE_OTHER` ("Other")
-   if none match.
+Still **needle/word matching, not strict positional splitting** —
+deliberately. A rigid parser that always expects exactly this dash
+pattern would produce garbage on creative names that don't follow it,
+e.g. this same file's own static `AN_CREATIVES` fallback data ("Standard
+Template – Cricket pricing = simple, transparent."). Word/substring
+matching just falls through to "Other" for those instead, which
+degrades safely — same principle as the original spec, just with a
+corrected normalizer and vocabulary.
 
-`initiative` was added to `PV_DIMS` as a `creativeOnly:true` dimension
-(same restriction as the existing `creative` dimension — Initiative can
-only be derived where a Creative Offer Name exists, i.e. creative-grain
-rows, not stage-level rollups). `pvPool()` attaches `.initiative` to
-each row when `pvState.src === 'creatives'`, computed fresh from
-`r.creative` on every call — via `.map()` into new row objects, not
-mutating the cached rows other tabs (Analytics, Creatives) also read
-from. Every other part of the pivot machinery (row/column selection,
-grouping, sorting, cell rendering) already keys off `r[rowKey]`/
-`r[colKey]` generically, so `initiative` slots in as a normal dimension
-with no further special-casing needed — the two places that *do*
-special-case a dimension key (`rowKey==='creative'` → run it through
-`offerLabel()`) correctly fall through to the plain value for
-`initiative`, since "Deal Drop" etc. are already human-readable.
+`pvNormalizeForMatch(s)`:
+1. Splits camelCase word boundaries **first** — `.replace(/([a-z])([A-Z])/g, '$1 $2')`
+   — so `"DoTheMost"` → `"Do The Most"`, `"CricketDealDrop"` →
+   `"Cricket Deal Drop"`. `"BTS"` (all-caps, no lowercase→uppercase
+   transition) passes through unchanged.
+2. Lowercases, then collapses hyphens/underscores/whitespace to single
+   spaces.
 
-## Known limitation
+Matching moved from a raw substring search to **whole-word matching**
+(`pvWordsOf` splits the normalized string into a word array;
+`pvContainsPhrase` checks for a needle's words as a contiguous
+subsequence). This matters specifically for "BTS" — a bare 3-letter
+acronym is exactly the kind of needle a plain `.includes('bts')` could
+false-positive-match inside an unrelated longer word; comparing actual
+word arrays avoids that (verified — see below).
 
-No-delimiter concatenations (e.g. a hypothetical "StrikeSale" with
-zero separator between the words) are **not** matched — deliberately.
-Cricket's actual naming conventions always delimit tokens with spaces,
-hyphens, or underscores (see `CLAUDE.md`'s file/creative naming
-patterns), so this isn't a realistic case to guard against, and adding
-camelCase-boundary splitting to catch it would risk false-positive
-matches on unrelated names elsewhere in the string.
+`PV_DIMS` gained `offerType` alongside `initiative`, both
+`creativeOnly:true` (same restriction as `creative` — only meaningful at
+creative grain, not stage rollups). `pvPool()` attaches both
+`.initiative` and `.offerType` in the same non-mutating `.map()` pass
+used for `.initiative` before. Every part of the pivot machinery
+(row/column pickers, grouping, sorting, cell rendering) already keys off
+`r[rowKey]`/`r[colKey]` generically, so `offerType` slots in with zero
+further special-casing, identically to how `initiative` already did.
 
 ## Verification
 
-`pvExtractInitiative` was run via `osascript -l JavaScript` against 8
-hand-built cases before wiring anything to the DOM: a natural-language
-name with "Do the Most" embedded, an all-caps "DEAL DROP" with hyphen
-separators, an underscore-delimited real-world-style Creative ID with
-"Deal_Drop" buried mid-string, a name with no initiative keyword at all
-(correctly "Other"), an exact-match lowercase string, and empty/null
-input (both correctly "Other"). 7 of 8 passed exactly as expected; the
-8th (the deliberately-unrealistic no-delimiter "StrikeSale" case) is
-the documented limitation above, not a defect.
+Re-verified via `osascript -l JavaScript`, extracting the actual
+functions from **both** `display-dashboard.html` and `index.html`
+(kept in sync) and running them against real strings copied from the
+trafficker file:
+- `Q3-DoTheMost-Offer-...` → Initiative "Do the Most", Offer Type "Offer" ✓
+- `Q3-BTS-CricketDealDrop-...` → Initiative "BTS", Offer Type "Cricket Deal Drop" ✓
+- `Q3-BTS-Offer-Transparency-...` → Initiative "BTS", Offer Type "Offer" ✓
+- `Q3-DoTheMost-Brand-...` → Initiative "Do the Most", Offer Type "Brand" ✓
+- An unrelated static-template name → both "Other" ✓
+- A hypothetical Apple row → Offer Type "Apple", Initiative unaffected ✓
 
-After the Deal Drop/Strike Sale merge, re-verified against 5 cases
-covering all 3 needles plus a no-match case: "Do the Most" still
-resolves on its own, both "DEAL DROP" (hyphen-separated) and "Strike
-Sale" (space-separated) correctly resolve to the same merged
-`"Deal Drop / Strike Sale"` label, an underscore-delimited real-world-
-style ID still resolves correctly, and an unrelated name still falls
-through to "Other". All 5 passed.
+Word-boundary safety for "BTS" was verified separately (`Nabts-...` and
+`AbtsInc-...`, where "bts" is embedded inside a longer word with no
+standalone token, both correctly resolve to Initiative "Other"; a real
+standalone `BTS` token still matches) — an initial version of this test
+was itself flawed (the test sentence accidentally contained "bts" as a
+genuine separate word elsewhere), caught and corrected before treating
+the result as a pass.

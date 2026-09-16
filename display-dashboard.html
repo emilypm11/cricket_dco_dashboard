@@ -9267,38 +9267,85 @@ const PV_DIMS = {
   mkt:        { label:'Market',     creativeOnly:false },
   creative:   { label:'Creative',   creativeOnly:true  },
   initiative: { label:'Initiative', creativeOnly:true  },
+  offerType:  { label:'Offer Type', creativeOnly:true  },
 };
 
-/* Initiative is parsed straight out of the Creative Offer Name string —
-   NOT a join across ID spaces like the Lookup-Table-driven "Group By"
-   dimensions on the Benchmarks tab. This is why it's buildable for Pivot
-   at all: Pivot's rows already carry `creative` (BigQuery's Creative
-   Offer Name), so there's no second dataset to bridge to, just text to
-   parse. Confirmed with Emily: only these known initiative labels,
-   matched case-insensitively anywhere in the name; anything else falls
-   into a generic "Other" bucket rather than being guessed at. Hyphens/
-   underscores are normalized to spaces before matching (this codebase's
-   naming conventions use underscores heavily — see CLAUDE.md — so
-   "Deal_Drop" and "Deal-Drop" still match "Deal Drop" without expanding
-   the vocabulary itself). See specs/pivot-initiative.md.
+/* Initiative and Offer Type are both parsed straight out of the Creative
+   Offer Name string — NOT a join across ID spaces. Verified against the
+   real Q3 2026 trafficker matrix
+   ("Argonaut - Cricket DCO Trafficker (2026).xlsx"), whose "Creative
+   Offer Name" column follows a hyphen-delimited pattern:
+     [Quarter]-[Campaign Initiative]-[Offer Type]-[Messaging]-...
+   e.g. "Q3-DoTheMost-Offer-4Linesfor$25/mo.each-..." or
+        "Q3-BTS-CricketDealDrop-FreePhone-...".
+   These are two INDEPENDENT axes — a BTS creative can be Offer, Brand,
+   or Cricket Deal Drop, and so can a Do The Most creative — confirmed
+   with Emily, who explicitly wants to be able to pivot by either one
+   alone or combined, not a single flattened bucket.
 
-   Deal Drop and Strike Sale share one label ("Deal Drop / Strike Sale")
-   per Emily — she considers them the same initiative in practice — while
-   still matching on both needles, since a Creative Offer Name will only
-   ever contain one or the other, never both. */
+   Matching is still needle/substring-based (not strict positional
+   splitting) because older/other creative names — e.g. this file's own
+   static AN_CREATIVES fallback data, like "Standard Template – Cricket
+   pricing = simple, transparent." — don't follow this dash-taxonomy
+   format at all. A rigid positional parser would produce garbage for
+   those; substring matching just falls through to "Other" instead,
+   which degrades safely.
+
+   Real Creative Offer Names are also camelCase-squashed with zero
+   delimiter between words ("DoTheMost", "CricketDealDrop") —
+   pvNormalizeForMatch splits on a lowercase→uppercase boundary before
+   lowercasing, so "DoTheMost" becomes "do the most" and matches.
+
+   Matching is done on WHOLE WORDS (pvContainsPhrase), not a raw
+   substring search, specifically because "BTS" is a short 3-letter
+   acronym — a plain .includes('bts') could false-positive-match inside
+   an unrelated longer word; comparing whitespace-split word arrays
+   avoids that. See specs/pivot-initiative.md. */
 const PV_INITIATIVES = [
-  { label:'Do the Most',              needle:'do the most' },
-  { label:'Deal Drop / Strike Sale',  needle:'deal drop'   },
-  { label:'Deal Drop / Strike Sale',  needle:'strike sale' },
+  { label:'Do the Most', needle:'do the most' },
+  { label:'BTS',         needle:'bts' },
 ];
 const PV_INITIATIVE_OTHER = 'Other';
+
+/* Cricket Deal Drop also catches "strike sale" under the same label —
+   carried over from Emily's earlier decision that the two are
+   effectively the same initiative in practice, even though "strike
+   sale" hasn't appeared in the real trafficker data checked so far. */
+const PV_OFFER_TYPES = [
+  { label:'Cricket Deal Drop', needle:'cricket deal drop' },
+  { label:'Cricket Deal Drop', needle:'strike sale' },
+  { label:'Brand',             needle:'brand' },
+  { label:'Offer',             needle:'offer' },
+  { label:'Apple',             needle:'apple' },
+];
+const PV_OFFER_TYPE_OTHER = 'Other';
+
 function pvNormalizeForMatch(s) {
-  return String(s || '').toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return String(s || '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function pvWordsOf(s) { return pvNormalizeForMatch(s).split(' ').filter(Boolean); }
+function pvContainsPhrase(words, phrase) {
+  const needleWords = phrase.split(' ');
+  for (let i = 0; i <= words.length - needleWords.length; i++) {
+    let match = true;
+    for (let j = 0; j < needleWords.length; j++) {
+      if (words[i+j] !== needleWords[j]) { match = false; break; }
+    }
+    if (match) return true;
+  }
+  return false;
 }
 function pvExtractInitiative(creativeOfferName) {
-  const norm = pvNormalizeForMatch(creativeOfferName);
-  const hit = PV_INITIATIVES.find(it => norm.includes(it.needle));
+  const words = pvWordsOf(creativeOfferName);
+  const hit = PV_INITIATIVES.find(it => pvContainsPhrase(words, it.needle));
   return hit ? hit.label : PV_INITIATIVE_OTHER;
+}
+function pvExtractOfferType(creativeOfferName) {
+  const words = pvWordsOf(creativeOfferName);
+  const hit = PV_OFFER_TYPES.find(it => pvContainsPhrase(words, it.needle));
+  return hit ? hit.label : PV_OFFER_TYPE_OTHER;
 }
 
 let pvState = { src:'creatives', layout:'grouped', rowDim:'creative', colDim:'stage', metrics:['imps','clicks','ctr'], sortMetric:'imps', sortCol:'__total__', sortDir:-1, mkt:'all', qs:[...ALL_QS], dateFrom:null, dateTo:null, collapsed:new Set() };
@@ -9312,10 +9359,11 @@ function pvPool() {
     ? effectiveCreativeRows(pvState.dateFrom, pvState.dateTo)
     : effectiveStageRows(pvState.dateFrom, pvState.dateTo);
   // Stage-level rows have no Creative Offer Name to parse, so Initiative
-  // is only attached at creative grain — spread into a new object rather
-  // than mutating the cached rows other tabs (Analytics, Creatives) share.
+  // /Offer Type are only attached at creative grain — spread into a new
+  // object rather than mutating the cached rows other tabs (Analytics,
+  // Creatives) share.
   const withInitiative = pvState.src === 'creatives'
-    ? raw.map(r => ({ ...r, initiative: pvExtractInitiative(r.creative) }))
+    ? raw.map(r => ({ ...r, initiative: pvExtractInitiative(r.creative), offerType: pvExtractOfferType(r.creative) }))
     : raw;
   return withInitiative.filter(r =>
     (pvState.mkt === 'all' || r.mkt === pvState.mkt) &&
