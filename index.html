@@ -1307,6 +1307,239 @@ svg { display: block; }
 [data-theme="dark"] .data-badge.gm { color: var(--accent); }
 [data-theme="dark"] .data-badge.ush { color: var(--blue); }
 
+/* Publisher badges (Performance Data tab) */
+.pub-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700;
+  color: #fff; white-space: nowrap;
+}
+.pub-badge.pub-facebook  { background: #1E5FCC; }
+.pub-badge.pub-tiktok    { background: #101010; }
+.pub-badge.pub-pinterest { background: #C81F28; }
+.pub-badge.pub-snapchat  { background: #E8C400; color: #10151C; }
+.pub-badge.pub-reddit    { background: #D9481D; }
+.pub-badge.pub-spotify   { background: #1DB954; color: #06210A; }
+.pub-badge.pub-pandora   { background: #224099; }
+.pub-badge.pub-innovid   { background: #6A3FB5; }
+.pub-badge.pub-default   { background: var(--muted); }
+
+/* Decision badges (Lower Funnel Scorecard) */
+.decision-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700;
+  white-space: nowrap;
+}
+.decision-badge.decision-keep   { background: var(--good-bg); color: var(--good); }
+.decision-badge.decision-rotate { background: #FFF3E0; color: #E65100; }
+[data-theme="dark"] .decision-badge.decision-rotate { background: rgba(255,130,0,.15); color: var(--orange); }
+.decision-badge.decision-cut    { background: var(--bad-bg); color: var(--bad); }
+.lf-zero-lpv-flag { color: var(--muted); font-size: 10px; margin-left: 4px; cursor: help; }
+
+/* Pivot / Benchmarks dropzone-style control (chip-drop-zone look) */
+.pv-dropzone {
+  background: var(--recess);
+  border: 1px dashed var(--border-s);
+  border-radius: 10px;
+  padding: 8px 10px;
+  min-width: 160px;
+}
+.pv-dropzone select { width: 100%; }
+
+/* ── Asset Links ──────────────────────────────────────────── */
+.al-missing-list { display: flex; flex-direction: column; gap: 10px; max-height: 640px; overflow-y: auto; }
+.al-missing-row {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 16px;
+}
+.al-missing-row-main { flex: 1; min-width: 0; }
+.al-missing-row-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.al-missing-row-id { font-weight: 700; font-size: 13px; font-family: var(--font-m); }
+.al-missing-row-imps { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.al-missing-row-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.al-lookup-tag {
+  font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+  background: var(--recess); color: var(--fg2); white-space: nowrap;
+}
+.al-suggestion {
+  margin-top: 8px; font-size: 11.5px; color: var(--fg2);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--blue-soft); border-radius: 8px; padding: 6px 10px;
+}
+.al-missing-row-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; flex-shrink: 0; width: 140px; }
+.al-dropzone {
+  border: 1px dashed var(--border-s); border-radius: 8px;
+  padding: 10px 6px; text-align: center; font-size: 10.5px; color: var(--muted);
+  transition: background .12s, border-color .12s;
+}
+.al-dropzone.dragover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+.al-asset-pane {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; position: sticky; top: 0;
+}
+.al-asset-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  max-height: 560px; overflow-y: auto;
+}
+.al-asset-tile {
+  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  cursor: grab; background: var(--recess);
+}
+.al-asset-thumb {
+  width: 100%; aspect-ratio: 1; background-size: cover; background-position: center;
+  background-color: var(--border);
+}
+.al-asset-filename {
+  font-size: 9.5px; padding: 5px 6px 2px; color: var(--fg2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.al-asset-usage { font-size: 9px; padding: 0 6px 6px; color: var(--muted); }
+.al-preview-thumb { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); display: block; }
+.al-preview-placeholder {
+  display: inline-flex; width: 32px; height: 32px; border-radius: 6px;
+  background: var(--recess); align-items: center; justify-content: center; color: var(--muted);
+}
+
+/* ── Fatigue Monitor ──────────────────────────────────────── */
+.fat-note {
+  background: var(--blue-soft); border: 1px solid rgba(30,138,255,.25);
+  border-radius: 10px; padding: 10px 16px; font-size: 12px; color: var(--fg2);
+  margin-bottom: 16px;
+}
+.fat-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-bottom: 24px; }
+.fat-queue-card, .fat-chart-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; min-height: 320px;
+}
+.fat-queue-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.fat-queue-list { display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; }
+.fat-queue-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.fat-queue-row:hover { background: var(--recess); }
+.fat-queue-row.selected { background: var(--accent-soft); border-color: rgba(91,197,0,.35); }
+.fat-queue-row-id { font-family: var(--font-m); font-weight: 700; font-size: 12px; min-width: 90px; }
+.fat-queue-row-meta { font-size: 10.5px; color: var(--muted); flex: 1; min-width: 0; }
+.fat-queue-row-pct { font-size: 12px; font-weight: 700; color: var(--bad); white-space: nowrap; }
+.fat-badge {
+  display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px;
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; white-space: nowrap;
+}
+.fat-badge.fat-healthy   { background: var(--good-bg); color: var(--good); }
+.fat-badge.fat-softening { background: #FFF3E0; color: #E65100; }
+[data-theme="dark"] .fat-badge.fat-softening { background: rgba(255,130,0,.15); color: var(--orange); }
+.fat-badge.fat-fatiguing { background: var(--bad-bg); color: var(--bad); }
+.fat-badge.fat-dead      { background: var(--fg); color: var(--card); }
+.fat-empty-chart { display: flex; align-items: center; justify-content: center; height: 260px; color: var(--muted); font-size: 12.5px; }
+.fat-chart-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.fat-chart-meta { font-size: 11px; color: var(--muted); }
+.fat-chart-legend { display: flex; gap: 14px; font-size: 10.5px; color: var(--fg2); margin-top: 8px; }
+.fat-chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.fat-legend-swatch { width: 14px; height: 2px; display: inline-block; }
+.fat-sparkline-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.fat-sparkline-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+  cursor: pointer;
+}
+.fat-sparkline-card:hover { border-color: var(--border-s); }
+.fat-sparkline-id { font-family: var(--font-m); font-size: 11px; font-weight: 700; }
+.fat-sparkline-meta { font-size: 9.5px; color: var(--muted); margin: 2px 0 6px; }
+.fat-sparkline-pct { font-size: 11px; font-weight: 700; color: var(--bad); margin-top: 4px; }
+.fat-section-title { font-size: 13px; font-weight: 700; margin: 24px 0 12px; }
+
+/* ── Reference layout (Glossary / Methodology two-pane) ──── */
+.ref-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.ref-nav {
+  width: 190px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+}
+.ref-nav-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 10px 8px;
+}
+.ref-nav-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg2);
+  cursor: pointer;
+  font-family: var(--font-b);
+  text-decoration: none;
+}
+.ref-nav-link:hover { background: var(--recess); color: var(--fg); }
+.ref-nav-link.active { background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+[data-theme="dark"] .ref-nav-link.active { color: var(--accent); }
+.ref-content { flex: 1; min-width: 0; }
+
+/* ── Methodology tab ──────────────────────────────────────── */
+.meth-section { margin-bottom: 36px; scroll-margin-top: 10px; }
+.meth-section h2 { font-size: 16px; font-weight: 700; font-family: var(--font-d); margin-bottom: 6px; }
+.meth-section-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+.meth-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.meth-card h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 10px; }
+.formula-block {
+  font-family: var(--font-m);
+  font-size: 12.5px;
+  line-height: 1.7;
+  background: var(--recess);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  color: var(--fg2);
+  overflow-x: auto;
+}
+.formula-block .fw { color: var(--accent-dark, #3F8D00); font-weight: 700; }
+[data-theme="dark"] .formula-block .fw { color: var(--accent); }
+.meth-callout {
+  background: var(--accent-soft);
+  border: 1px solid rgba(91,197,0,.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--fg2);
+  margin-bottom: 10px;
+}
+.meth-callout b { color: var(--fg); }
+.meth-def-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.meth-def-table th, .meth-def-table td {
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.meth-def-table th { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; }
+@media (max-width: 900px) {
+  .ref-layout { flex-direction: column; }
+  .ref-nav { width: 100%; position: static; }
+}
+
 /* ─── Module 5: Creatives ────────────────────────────────── */
 .creatives-grid {
   /* Cards sit under the 300px-wide captured preview so the thumbnail is
@@ -1535,9 +1768,14 @@ svg { display: block; }
     <button class="top-tab active" data-tab="overview">Overview</button>
     <button class="top-tab" data-tab="analytics">Analytics</button>
     <button class="top-tab" data-tab="pivot">Pivot</button>
+    <button class="top-tab" data-tab="benchmarks">Benchmarks</button>
+    <button class="top-tab" data-tab="scorecard">Lower Funnel Scorecard</button>
+    <button class="top-tab" data-tab="assetlinks">Asset Links</button>
+    <button class="top-tab" data-tab="fatigue">Fatigue</button>
     <button class="top-tab" data-tab="trends">Trends</button>
-    <button class="top-tab" data-tab="creatives">Creatives</button>
+    <button class="top-tab" data-tab="creatives">Performance Data</button>
     <button class="top-tab" data-tab="glossary">Glossary</button>
+    <button class="top-tab" data-tab="methodology">Methodology</button>
   </div>
 
   <!-- ── Main column ── -->
@@ -1732,7 +1970,8 @@ svg { display: block; }
     <div class="tab-panel" id="tab-creatives">
       <div class="page-header">
         <div>
-          <h1>Creatives</h1>
+          <h1>Performance Data</h1>
+          <div class="page-header-sub">Full creative performance dataset. Filter, sort, and switch between the card library and the scored crosstab table.</div>
         </div>
         <div class="page-header-actions">
           <button class="btn-ghost btn-sm" id="crRefreshPreviewsBtn" title="Clear the cached Cloudflare preview matches and re-fetch from BigQuery + Cloudflare. Use this after uploading new creative or fixing a version-name mismatch.">
@@ -1770,8 +2009,8 @@ svg { display: block; }
       </div>
 
       <div class="seg-tabs" id="crViewToggle" style="margin-bottom:12px">
-        <button class="active" data-view="cards">Creative Library</button>
-        <button data-view="scoring">Performance Scoring</button>
+        <button class="active" data-view="cards">Cards</button>
+        <button data-view="scoring">Table</button>
       </div>
 
       <div id="crCardsView">
@@ -2119,7 +2358,10 @@ svg { display: block; }
 
     <div class="tab-panel" id="tab-pivot">
       <div class="page-header">
-        <div><h1>Pivot Analysis</h1></div>
+        <div>
+          <h1>Pivot Analysis</h1>
+          <div class="page-header-sub">Cross-cut performance by market, quarter, funnel stage, creative, or initiative.</div>
+        </div>
         <div class="page-header-actions">
           <button class="btn-primary btn-sm" id="pvExportBtn">
             <svg-icon name="download" size="13"></svg-icon> Export
@@ -2184,9 +2426,233 @@ svg { display: block; }
       <div id="pvTablesContainer"></div>
     </div>
 
+    <div class="tab-panel" id="tab-benchmarks">
+      <div class="page-header">
+        <div>
+          <h1>Benchmarks</h1>
+          <div class="page-header-sub" id="bmHeaderSub">Pooled performance by Publisher &rsaquo; Funnel &rsaquo; Ad Type, from the same uploaded crosstab as Performance Data.</div>
+        </div>
+      </div>
+
+      <div class="analytics-toolbar">
+        <select class="an-select" id="bmDatasetTypeSelect" title="Which uploaded crosstab dataset to summarize">
+          <option value="daily">Daily</option>
+          <option value="monthly">Monthly</option>
+          <option value="summary">Summary</option>
+        </select>
+        <span id="bmRowCount" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+
+      <div id="bmUploadNotice" style="display:none;font-size:12px;color:var(--muted);padding:32px 0;text-align:center">
+        Upload a Creative_DownloadCrosstab export on the Performance Data tab to see Benchmarks.
+      </div>
+
+      <div id="bmBody">
+        <div class="an-filter-row">
+          <select class="an-select" id="bmPublisherFilter"><option value="all">All Publishers</option></select>
+          <select class="an-select" id="bmFunnelFilter"><option value="all">All Funnels</option></select>
+          <select class="an-select" id="bmAdTypeFilter"><option value="all">All Ad Types</option></select>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="pv-label">Period</span>
+            <input type="date" id="bmDateFrom" class="cr-form-input" style="width:auto;padding:6px 10px;font-size:12px">
+            <span style="color:var(--muted);font-size:12px">to</span>
+            <input type="date" id="bmDateTo" class="cr-form-input" style="width:auto;padding:6px 10px;font-size:12px">
+            <button class="btn-ghost btn-sm" id="bmDateRangeClear" style="padding:4px 10px">All time</button>
+          </div>
+        </div>
+
+        <div class="pv-control-group pv-dropzone" style="margin-bottom:16px;display:inline-flex;flex-direction:column">
+          <span class="pv-label">Group By</span>
+          <div class="tr-metric-pills" id="bmGroupByPills"></div>
+        </div>
+
+        <div class="pv-control-group pv-dropzone" style="margin-bottom:16px;display:inline-flex;flex-direction:column">
+          <span class="pv-label">Values</span>
+          <div class="tr-metric-pills" id="bmMetricPills"></div>
+        </div>
+
+        <div class="analytics-table-wrap">
+          <table class="data-table analytics-table" id="bmTable">
+            <thead id="bmThead"></thead>
+            <tbody id="bmTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-scorecard">
+      <div class="page-header">
+        <div>
+          <h1>Lower Funnel Scorecard</h1>
+          <div class="page-header-sub">Lower funnel creatives scored against their peer group, with Keep / Rotate+Reduce / Cut decisions.</div>
+        </div>
+      </div>
+
+      <div class="analytics-toolbar">
+        <select class="an-select" id="lfDatasetTypeSelect" title="Which uploaded crosstab dataset to score">
+          <option value="daily">Daily</option>
+          <option value="monthly">Monthly</option>
+          <option value="summary">Summary</option>
+        </select>
+        <select class="an-select" id="lfFunnelScopeSelect" title="Which Funnel value(s) count as &quot;lower funnel&quot;">
+          <option value="__auto__">Auto: funnel contains &quot;lower&quot;</option>
+        </select>
+        <span id="lfRowCount" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+
+      <div id="lfUploadNotice" style="display:none;font-size:12px;color:var(--muted);padding:32px 0;text-align:center">
+        Upload a Creative_DownloadCrosstab export on the Performance Data tab to see the Lower Funnel Scorecard.
+      </div>
+
+      <div id="lfBody">
+        <div class="mini-kpi-row" id="lfKpiRow" style="grid-template-columns:repeat(5,1fr)"></div>
+
+        <div class="an-filter-row">
+          <select class="an-select" id="lfPublisherFilter"><option value="all">All Publishers</option></select>
+          <select class="an-select" id="lfAdTypeFilter"><option value="all">All Ad Types</option></select>
+          <select class="an-select" id="lfDecisionFilter">
+            <option value="all">All Decisions</option>
+            <option value="keep">Keep</option>
+            <option value="rotate">Rotate / Reduce</option>
+            <option value="cut">Cut</option>
+          </select>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="pv-label">Period</span>
+            <input type="date" id="lfDateFrom" class="cr-form-input" style="width:auto;padding:6px 10px;font-size:12px">
+            <span style="color:var(--muted);font-size:12px">to</span>
+            <input type="date" id="lfDateTo" class="cr-form-input" style="width:auto;padding:6px 10px;font-size:12px">
+            <button class="btn-ghost btn-sm" id="lfDateRangeClear" style="padding:4px 10px">All time</button>
+          </div>
+          <div class="an-search">
+            <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
+            <input id="lfSearch" type="text" placeholder="Search creative ID…"/>
+          </div>
+        </div>
+
+        <div class="analytics-table-wrap">
+          <table class="data-table analytics-table" id="lfTable">
+            <thead id="lfThead"></thead>
+            <tbody id="lfTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-assetlinks">
+      <div class="page-header">
+        <div>
+          <h1>Asset Links</h1>
+          <div class="page-header-sub" id="alHeaderSub">Creatives with no linked image. Drag an asset onto one, or upload a new file.</div>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-ghost btn-sm" id="alRefreshBtn">
+            <svg-icon name="download" size="13"></svg-icon> Refresh Assets
+          </button>
+          <button class="btn-primary btn-sm" id="alAcceptSuggestionsBtn" disabled>No Suggestions</button>
+        </div>
+      </div>
+
+      <div class="analytics-toolbar">
+        <select class="an-select" id="alDatasetTypeSelect" title="Which uploaded crosstab dataset to check for missing assets">
+          <option value="daily">Daily</option>
+          <option value="monthly">Monthly</option>
+          <option value="summary">Summary</option>
+        </select>
+      </div>
+
+      <div id="alUploadNotice" style="display:none;font-size:12px;color:var(--muted);padding:32px 0;text-align:center">
+        Upload a Creative_DownloadCrosstab export on the Performance Data tab to see Asset Links.
+      </div>
+
+      <input type="file" id="alUploadPickerInput" accept="image/png,image/jpeg,image/webp" style="display:none">
+
+      <div id="alBody" style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start">
+        <div>
+          <div class="an-filter-row">
+            <select class="an-select" id="alPublisherFilter"><option value="all">All Publishers</option></select>
+            <select class="an-select" id="alFunnelFilter"><option value="all">All Funnels</option></select>
+            <select class="an-select" id="alAdTypeFilter"><option value="all">All Ad Types</option></select>
+            <div class="an-search">
+              <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
+              <input id="alSearch" type="text" placeholder="Search creative ID…"/>
+            </div>
+            <span id="alMissingCount" style="font-size:12px;color:var(--muted);margin-left:auto"></span>
+          </div>
+          <div id="alMissingList" class="al-missing-list"></div>
+        </div>
+
+        <div class="al-asset-pane">
+          <div class="an-search" style="margin-bottom:10px">
+            <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
+            <input id="alAssetSearch" type="text" placeholder="Search assets by filename…"/>
+          </div>
+          <div id="alAssetGrid" class="al-asset-grid"></div>
+          <div id="alAssetCount" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-fatigue">
+      <div class="page-header">
+        <div>
+          <h1>Creative Fatigue Monitor</h1>
+          <div class="page-header-sub">Detect creatives in decay before spend is wasted. Rolling-trend regression + step-change detection, with a projected half-life.</div>
+        </div>
+      </div>
+
+      <div class="analytics-toolbar">
+        <select class="an-select" id="fatDatasetTypeSelect" title="Fatigue analysis needs day-level data">
+          <option value="daily">Daily</option>
+        </select>
+        <div class="seg-tabs" id="fatStateFilter">
+          <button class="active" data-state="all">All</button>
+          <button data-state="flagged">All Flagged</button>
+          <button data-state="softening">Softening</button>
+          <button data-state="fatiguing">Fatiguing</button>
+          <button data-state="dead">Dead</button>
+        </div>
+        <div class="seg-tabs" id="fatConfidenceFilter">
+          <button class="active" data-conf="any">Any Confidence</button>
+          <button data-conf="high">High Only</button>
+        </div>
+        <div class="seg-tabs green" id="fatMetricToggle">
+          <button class="active" data-metric="ctr">CTR</button>
+          <button data-metric="cvr">CVR</button>
+        </div>
+      </div>
+
+      <div id="fatUploadNotice" style="display:none;font-size:12px;color:var(--muted);padding:32px 0;text-align:center">
+        Upload a Daily Creative_DownloadCrosstab export on the Performance Data tab to see the Fatigue Monitor. This tab needs day-level data — Monthly/Summary datasets can't be analyzed for decay.
+      </div>
+
+      <div id="fatBody">
+        <div class="fat-note" id="fatEligibilityNote"></div>
+
+        <div class="mini-kpi-row" id="fatKpiRow" style="grid-template-columns:repeat(4,1fr)"></div>
+
+        <div class="fat-layout">
+          <div class="fat-queue-card">
+            <div class="fat-queue-title" id="fatQueueTitle">Refresh Queue</div>
+            <div class="fat-queue-list" id="fatQueueList"></div>
+          </div>
+          <div class="fat-chart-card">
+            <div id="fatChartArea">
+              <div class="fat-empty-chart">← Select a creative to view its decay curve</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fat-section-title">Top Fatiguing — Sparklines</div>
+        <div class="fat-sparkline-grid" id="fatSparklineGrid"></div>
+      </div>
+    </div>
+
     <div class="tab-panel" id="tab-glossary">
       <div class="page-header">
-        <div><h1>Glossary</h1></div>
+        <div>
+          <h1>Glossary</h1>
+          <div class="page-header-sub">Definitions for every metric, dimension, and derived score used across the dashboard.</div>
+        </div>
         <div class="page-header-actions">
           <div class="an-search">
             <svg-icon name="search" size="13" color="var(--muted)"></svg-icon>
@@ -2194,17 +2660,110 @@ svg { display: block; }
           </div>
         </div>
       </div>
-      <div class="gloss-cats" id="glossCats">
-        <button class="active" data-cat="all">All</button>
-        <button data-cat="metrics">Metrics</button>
-        <button data-cat="creative">Creative</button>
-        <button data-cat="markets">Markets</button>
-        <button data-cat="platforms">Platforms</button>
-        <button data-cat="ops">Ops</button>
-        <button data-cat="scoring">Performance Scoring</button>
+      <div class="ref-layout">
+        <div class="ref-nav">
+          <div class="ref-nav-label">Jump to section</div>
+          <div class="gloss-cats" id="glossCats" style="flex-direction:column;align-items:stretch;gap:2px">
+            <button class="active ref-nav-link" data-cat="all">All</button>
+            <button class="ref-nav-link" data-cat="metrics">Metrics</button>
+            <button class="ref-nav-link" data-cat="creative">Creative</button>
+            <button class="ref-nav-link" data-cat="markets">Markets</button>
+            <button class="ref-nav-link" data-cat="platforms">Platforms</button>
+            <button class="ref-nav-link" data-cat="ops">Ops</button>
+            <button class="ref-nav-link" data-cat="scoring">Performance Scoring</button>
+          </div>
+        </div>
+        <div class="ref-content">
+          <div id="glossCount" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
+          <div class="gloss-grid" id="glossGrid"></div>
+        </div>
       </div>
-      <div id="glossCount" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
-      <div class="gloss-grid" id="glossGrid"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-methodology">
+      <div class="page-header">
+        <div>
+          <h1>Methodology</h1>
+          <div class="page-header-sub">How every metric and derived score on the Performance Data tab is calculated.</div>
+        </div>
+      </div>
+      <div class="ref-layout">
+        <div class="ref-nav">
+          <div class="ref-nav-label">Jump to section</div>
+          <a class="ref-nav-link" href="#meth-metrics">Metric Formulas</a>
+          <a class="ref-nav-link" href="#meth-composite">Composite Score</a>
+          <a class="ref-nav-link" href="#meth-groups">Benchmark &amp; Peer Groups</a>
+          <a class="ref-nav-link" href="#meth-decision">Lower Funnel Decision</a>
+          <a class="ref-nav-link" href="#meth-nulls">Null Handling</a>
+        </div>
+        <div class="ref-content">
+
+          <div class="meth-section" id="meth-metrics">
+            <h2>Metric Formulas</h2>
+            <div class="meth-section-desc">Applies to the crosstab-based Performance Data tab (Creative ID / Publisher / Funnel / Ad Type grain). Raw counts are always summed first, then divided once — metrics are never computed by averaging per-row rates.</div>
+            <div class="meth-card">
+              <table class="meth-def-table">
+                <thead><tr><th>Metric</th><th>Formula</th><th>Notes</th></tr></thead>
+                <tbody>
+                  <tr><td>CTR</td><td class="formula-block" style="display:inline;padding:2px 8px">Clicks ÷ Impressions</td><td>&nbsp;</td></tr>
+                  <tr><td>LPVR</td><td class="formula-block" style="display:inline;padding:2px 8px">Landing Page Visits ÷ Impressions</td><td>&nbsp;</td></tr>
+                  <tr><td>CVR</td><td class="formula-block" style="display:inline;padding:2px 8px">Orders ÷ Landing Page Visits</td><td>&nbsp;</td></tr>
+                  <tr><td>TDOR</td><td class="formula-block" style="display:inline;padding:2px 8px">Orders ÷ Impressions</td><td>Computed directly, not CVR×LPVR — stays defined even when CVR is null</td></tr>
+                  <tr><td>VCR 100%</td><td class="formula-block" style="display:inline;padding:2px 8px">100% Video Completes ÷ Impressions</td><td>Video formats only</td></tr>
+                  <tr><td>VVR 25%</td><td class="formula-block" style="display:inline;padding:2px 8px">VV25 ÷ Impressions</td><td>Video formats only</td></tr>
+                  <tr><td>Rate of Completion</td><td class="formula-block" style="display:inline;padding:2px 8px">100% Video Completes ÷ VV25</td><td>Raw-count ratio, not ratio-of-ratios</td></tr>
+                  <tr><td>Social ER</td><td class="formula-block" style="display:inline;padding:2px 8px">Social Engagements ÷ Impressions</td><td>Null when the column is absent from the upload, 0% when present but zero</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="meth-section" id="meth-composite">
+            <h2>Composite Score</h2>
+            <div class="meth-section-desc">A 0–100 weighted blend of four percentile ranks, each measured within a creative's Publisher × Funnel peer group.</div>
+            <div class="meth-card">
+              <div class="formula-block">Composite = <span class="fw">0.35</span> × TDOR<sub>pct</sub><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="fw">0.30</span> × CVR<sub>pct</sub><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="fw">0.20</span> × LPVR<sub>pct</sub><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="fw">0.15</span> × CTR<sub>pct</sub></div>
+              <div class="meth-callout"><b>Weight rationale:</b> TDOR leads because it's the single most complete full-funnel signal — click, page-view, and conversion efficiency collapsed into one number. CVR is weighted second as the closest individual proxy to completed orders. LPVR reflects landing-page quality. CTR gets the lowest weight because click volume alone weakly predicts conversion.</div>
+              <p style="font-size:12px;color:var(--fg2)">Each component is a <b>percentile rank</b> — the share of creatives in the same peer group with a raw value less than or equal to this creative's value. 100 = highest in its peer group, 0 = lowest.</p>
+            </div>
+          </div>
+
+          <div class="meth-section" id="meth-groups">
+            <h2>Benchmark &amp; Peer Groups</h2>
+            <div class="meth-card">
+              <h3>Benchmark Group</h3>
+              <p style="font-size:12px;color:var(--fg2);margin-bottom:10px">Publisher × Funnel × Ad Type. Benchmark value = <b>median</b> across non-null members (creative performance data is right-skewed, so median resists outliers). Groups with fewer than 2 members are shown but flagged as low-confidence.</p>
+              <h3>Peer Group</h3>
+              <p style="font-size:12px;color:var(--fg2)">Publisher × Funnel (broader — no Ad Type split). Used for Percentile Rank and Composite Score. Peer Rank is a 1-based ordinal by Composite Score, descending, among <b>scored</b> peers only (the denominator excludes creatives with a null score).</p>
+            </div>
+          </div>
+
+          <div class="meth-section" id="meth-decision">
+            <h2>Lower Funnel Decision</h2>
+            <div class="meth-section-desc">Applies only to the Lower Funnel Scorecard tab — maps a creative's existing Composite Score to a Keep / Rotate+Reduce / Cut verdict.</div>
+            <div class="meth-card">
+              <table class="meth-def-table">
+                <thead><tr><th>Composite Score</th><th>Decision</th></tr></thead>
+                <tbody>
+                  <tr><td>&ge; 50 (at or above peer-group median)</td><td>Keep</td></tr>
+                  <tr><td>25 &ndash; 49 (below median)</td><td>Rotate / Reduce</td></tr>
+                  <tr><td>&lt; 25 (bottom quartile)</td><td>Cut</td></tr>
+                </tbody>
+              </table>
+              <p style="font-size:12px;color:var(--fg2);margin-top:10px">Scoped to rows whose Funnel value contains &ldquo;lower&rdquo; (e.g. &ldquo;Lower Funnel&rdquo;, &ldquo;Lower Funnel (eComm)&rdquo;) by default, with a manual override dropdown on the tab itself for datasets that label lower-funnel differently. A creative with a null Composite Score (see Null Handling below) gets no decision and is shown separately, not silently defaulted to Cut.</p>
+            </div>
+          </div>
+
+          <div class="meth-section" id="meth-nulls">
+            <h2>Null Handling</h2>
+            <div class="meth-card">
+              <p style="font-size:12px;color:var(--fg2)">If any of the 4 required percentiles (TDOR, CVR, LPVR, CTR) is null for a creative, its Composite Score is null — weight is never silently redistributed across the remaining metrics. A Static ad-type row has null VCR/VVR/Rate of Completion (no video metrics exist for it), which is expected and shown as a dash, not a zero.</p>
+              <div class="meth-callout" style="margin-top:10px"><b>Zero-LPV creatives:</b> when Landing Page Visits is 0, CVR is undefined (orders ÷ 0) and a real 0% LPVR would otherwise sink the creative to the bottom of its peer group for what's often a tracking gap, not poor performance. Both percentile components are set to a neutral 50 instead — the creative still gets a real Composite Score (driven by TDOR/CTR), and is flagged with a note wherever it appears on the Lower Funnel Scorecard.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
   </div><!-- .main -->
@@ -3347,12 +3906,17 @@ loadIdentity();
 
 /* ── Tab titles ──────────────────────────────────────────── */
 const TAB_TITLES = {
-  overview:  'Overview',
-  analytics: 'Analytics',
-  pivot:     'Pivot Analysis',
-  trends:    'Trends',
-  creatives: 'Creatives',
-  glossary:  'Glossary',
+  overview:    'Overview',
+  analytics:   'Analytics',
+  pivot:       'Pivot Analysis',
+  benchmarks:  'Benchmarks',
+  scorecard:   'Lower Funnel Scorecard',
+  assetlinks:  'Asset Links',
+  fatigue:     'Creative Fatigue Monitor',
+  trends:      'Trends',
+  creatives:   'Performance Data',
+  glossary:    'Glossary',
+  methodology: 'Methodology',
 };
 
 /* ── Active tab state ────────────────────────────────────── */
@@ -3447,6 +4011,15 @@ window.__onAuth = function(user) {
   if (typeof mpLoad === 'function') {
     mpLoad().then(() => {
       if (typeof renderCreatives === 'function') renderCreatives();
+    });
+  }
+
+  /* Asset Links: load locally-uploaded files and sign any already-linked
+     Cloudflare assets eagerly, so Performance Data's preview column shows
+     real thumbnails without requiring a visit to the Asset Links tab first. */
+  if (typeof alLoadFiles === 'function') {
+    alLoadFiles().then(() => alSignLinkedCfAssets()).then(() => {
+      if (typeof renderPerformanceScoring === 'function') renderPerformanceScoring();
     });
   }
 
@@ -6774,9 +7347,20 @@ function psScoreRows(normalizedRows) {
     const valuesByMetric = {};
     compositeMetricKeys.forEach(k => { valuesByMetric[k] = members.map(r => r.metrics[k]); });
     members.forEach(r => {
+      /* Zero-LPV creatives: CVR is undefined (orders/0) and a real LPVR of
+         0% would otherwise rank at the bottom of the peer group for what's
+         often a tracking gap rather than bad creative performance — so
+         both get a neutral percentile (0.5) instead of a real rank. TDOR
+         and CTR are unaffected and still compare normally. */
+      const zeroLpv = r.lpv === 0;
       const pct = {};
-      compositeMetricKeys.forEach(k => { pct[k] = psPercentileRank(valuesByMetric[k], r.metrics[k]); });
+      compositeMetricKeys.forEach(k => {
+        pct[k] = (zeroLpv && (k === 'cvr' || k === 'lpvr'))
+          ? 0.5
+          : psPercentileRank(valuesByMetric[k], r.metrics[k]);
+      });
       r.percentiles = pct;
+      r.zeroLpv = zeroLpv;
       r.composite = psComposite(pct);
       r.compositeMissingMetric = r.composite == null
         ? PS_COMPOSITE_LABELS[compositeMetricKeys.find(k => pct[k] == null)]
@@ -6854,9 +7438,31 @@ function psFlattenRow(r) {
   return flat;
 }
 
+const PUB_BADGE_COLORS = {
+  facebook:  'pub-facebook',
+  meta:      'pub-facebook',
+  tiktok:    'pub-tiktok',
+  pinterest: 'pub-pinterest',
+  snapchat:  'pub-snapchat',
+  reddit:    'pub-reddit',
+  spotify:   'pub-spotify',
+  pandora:   'pub-pandora',
+  innovid:   'pub-innovid',
+};
+function psPublisherBadge(v) {
+  if (v == null || v === '') return '—';
+  const cls = PUB_BADGE_COLORS[String(v).toLowerCase()] || 'pub-default';
+  return `<span class="pub-badge ${cls}">${esc(v)}</span>`;
+}
+
+/* alPreviewCellHtml is defined later in this same script, alongside the
+   Asset Links feature — function declarations hoist, so referencing it
+   here (only called at render time, well after the whole script has
+   executed once) is safe. */
 const PS_BASE_COLS = [
+  {key:'preview',    label:'',            fmt:(v,r)=>alPreviewCellHtml(r.creativeId)},
   {key:'creativeId', label:'Creative ID', fmt:v=>esc(v)},
-  {key:'publisher',  label:'Publisher',   fmt:v=>esc(v)},
+  {key:'publisher',  label:'Publisher',   fmt:psPublisherBadge},
   {key:'funnel',     label:'Funnel',      fmt:v=>esc(v)},
   {key:'adType',     label:'Ad Type',     fmt:v=>esc(v)},
   {key:'imps',       label:'Imps',        fmt:fmtN},
@@ -7129,6 +7735,1116 @@ document.getElementById('psSearch').addEventListener('input', e => { psState.sea
 
 updatePsCrosstabChip();
 updatePsLookupChip();
+
+/* ═══════════════════════════════════════════════════════════
+   Benchmarks tab — peer-group rollups (Publisher × Funnel × Ad Type,
+   plus any Lookup Table column, e.g. Initiative)
+   Reuses the same crosstab data (PS_DATASETS) and per-row metric math
+   as Performance Scoring above, but aggregates one level up — to the
+   Benchmark Group itself — instead of per creative. Shows pooled/summed
+   actuals per group (impressions/orders/etc. summed, then rates computed
+   once), matching the reference dashboard's Benchmarks tab. The
+   per-creative *median* benchmark value (the Benchmark Group definition
+   in specs/performance-scoring.md) already lives on Performance Data's
+   "Bench ___" columns — this tab is a group-level rollup, a different
+   (complementary) view of the same Benchmark Group concept.
+   ═══════════════════════════════════════════════════════════ */
+const BM_METRIC_DEFS = [
+  { key:'imps',   label:'Impressions', kind:'count', fmt:fmtN },
+  { key:'clicks', label:'Clicks',      kind:'count', fmt:fmtN },
+  { key:'lpv',    label:'LPVs',        kind:'count', fmt:fmtN },
+  { key:'orders', label:'Orders',      kind:'count', fmt:fmtN },
+  { key:'ctr',    label:'CTR',         kind:'rate',  fmt:psFmtPct },
+  { key:'lpvr',   label:'LPVR',        kind:'rate',  fmt:psFmtPct },
+  { key:'cvr',    label:'CVR',         kind:'rate',  fmt:psFmtPct },
+  { key:'tdor',   label:'TDOR',        kind:'rate',  fmt:psFmtPct },
+  { key:'vcr100', label:'VCR 100%',    kind:'rate',  fmt:psFmtPct },
+  { key:'vvr25',  label:'VVR 25%',     kind:'rate',  fmt:psFmtPct },
+  { key:'rateOfCompletion', label:'Rate of Completion', kind:'rate', fmt:psFmtPct },
+  { key:'socialEr', label:'Social ER', kind:'rate',  fmt:psFmtPct },
+];
+function bmMetricValue(g, key) {
+  const def = BM_METRIC_DEFS.find(m => m.key === key);
+  return def.kind === 'count' ? g[key] : g.metrics[key];
+}
+
+const bmState = {
+  datasetType: 'daily',
+  publisher: 'all', funnel: 'all', adType: 'all',
+  dateFrom: null, dateTo: null,
+  groupDims: ['publisher', 'funnel', 'adType'],
+  metrics: ['imps', 'orders', 'cvr'],
+  sortCol: 'imps', sortDir: -1,
+};
+
+/* Base grouping dimensions live directly on the normalized crosstab row.
+   Beyond those, any column from an uploaded Lookup Table — Initiative,
+   Concept, Campaign Type, whatever the file happens to have — becomes
+   an available grouping dimension too, joined onto each row by Creative
+   ID at render time (same "joined at render time only, never baked into
+   stored rows" rule as the rest of Performance Scoring). */
+function bmGroupDimDefs() {
+  const base = [
+    { key:'publisher', label:'Publisher', source:'row' },
+    { key:'funnel',     label:'Funnel',    source:'row' },
+    { key:'adType',     label:'Ad Type',   source:'row' },
+  ];
+  const extra = PS_LOOKUP.extraCols.map(c => ({ key:c, label:c, source:'lookup' }));
+  return [...base, ...extra];
+}
+function bmRowDimValue(r, dim) {
+  if (dim.source === 'row') return r[dim.key];
+  const lookup = PS_LOOKUP.byId[r.creativeId];
+  return (lookup && lookup[dim.key]) || '—';
+}
+
+/* One level up from psAggregateScoringRows: groups by whichever dimensions
+   are currently toggled on in bmState.groupDims (drops Creative ID from
+   the key regardless), tracking distinct creative IDs per group for a
+   low-confidence flag (<2 creatives). */
+function bmAggregateGroups(normalizedRows, dimDefs) {
+  const groups = new Map();
+  normalizedRows.forEach(r => {
+    const dimValues = dimDefs.map(d => bmRowDimValue(r, d));
+    const key = dimValues.join('|');
+    if (!groups.has(key)) {
+      groups.set(key, { dimValues,
+        imps:0, clicks:0, lpv:0, orders:0, vcomp:0, vv25:0, socialEng:0, socialColPresent:false,
+        creativeIds: new Set() });
+    }
+    const g = groups.get(key);
+    g.imps += r.imps; g.clicks += r.clicks; g.lpv += r.lpv; g.orders += r.orders;
+    g.vcomp += r.vcomp; g.vv25 += r.vv25; g.socialEng += r.socialEng;
+    if (r.socialColPresent) g.socialColPresent = true;
+    g.creativeIds.add(r.creativeId);
+  });
+  return [...groups.values()].map(g => {
+    const metrics = psComputeMetrics(g);
+    metrics.socialEr = psSocialEr(g);
+    return { ...g, creativeCount: g.creativeIds.size, lowConfidence: g.creativeIds.size < 2, metrics };
+  });
+}
+
+function renderBmMetricPills() {
+  document.getElementById('bmMetricPills').innerHTML = BM_METRIC_DEFS.map(m =>
+    `<button class="tr-metric-pill${bmState.metrics.includes(m.key)?' active':''}" data-metric="${m.key}">${m.label}</button>`
+  ).join('');
+}
+function renderBmGroupByPills(dimDefs) {
+  document.getElementById('bmGroupByPills').innerHTML = dimDefs.map(d =>
+    `<button class="tr-metric-pill${bmState.groupDims.includes(d.key)?' active':''}" data-dim="${esc(d.key)}">${esc(d.label)}</button>`
+  ).join('');
+}
+
+function renderBenchmarks() {
+  const rawRows = PS_DATASETS[bmState.datasetType] || [];
+
+  if (!rawRows.length) {
+    document.getElementById('bmUploadNotice').style.display = '';
+    document.getElementById('bmBody').style.display = 'none';
+    document.getElementById('bmRowCount').textContent = '';
+    return;
+  }
+  document.getElementById('bmUploadNotice').style.display = 'none';
+  document.getElementById('bmBody').style.display = '';
+
+  psPopulateFilterDropdown('bmPublisherFilter', psDistinctValues(rawRows,'publisher'), bmState.publisher);
+  psPopulateFilterDropdown('bmFunnelFilter',    psDistinctValues(rawRows,'funnel'),    bmState.funnel);
+  psPopulateFilterDropdown('bmAdTypeFilter',    psDistinctValues(rawRows,'adType'),    bmState.adType);
+
+  let rows = rawRows;
+  if (bmState.dateFrom) rows = rows.filter(r => r.dateBreakdown && r.dateBreakdown >= bmState.dateFrom);
+  if (bmState.dateTo)   rows = rows.filter(r => r.dateBreakdown && r.dateBreakdown <= bmState.dateTo);
+  rows = rows.filter(r =>
+    (bmState.publisher === 'all' || r.publisher === bmState.publisher) &&
+    (bmState.funnel    === 'all' || r.funnel    === bmState.funnel)    &&
+    (bmState.adType    === 'all' || r.adType    === bmState.adType)
+  );
+
+  const allDimDefs = bmGroupDimDefs();
+  bmState.groupDims = bmState.groupDims.filter(k => allDimDefs.some(d => d.key === k));
+  if (!bmState.groupDims.length) bmState.groupDims = ['publisher'];
+  const activeDimDefs = allDimDefs.filter(d => bmState.groupDims.includes(d.key));
+
+  const groups = bmAggregateGroups(rows, activeDimDefs);
+  groups.sort((a,b) => {
+    const av = bmMetricValue(a, bmState.sortCol), bv = bmMetricValue(b, bmState.sortCol);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return (av - bv) * bmState.sortDir;
+  });
+
+  renderBmMetricPills();
+  renderBmGroupByPills(allDimDefs);
+
+  const groupLabel = activeDimDefs.map(d => d.label).join(' › ');
+  document.getElementById('bmHeaderSub').textContent = `Pooled performance by ${groupLabel}, from the same uploaded crosstab as Performance Data.`;
+
+  const thead = document.getElementById('bmThead');
+  const tbody = document.getElementById('bmTbody');
+  const metricCols = BM_METRIC_DEFS.filter(m => bmState.metrics.includes(m.key));
+
+  thead.innerHTML = `<tr>
+    <th>${esc(groupLabel)}</th>
+    <th># Creatives</th>
+    ${metricCols.map(c => `<th data-col="${c.key}" class="${c.key===bmState.sortCol?(bmState.sortDir===1?'sort-asc':'sort-desc'):''}">${esc(c.label)}</th>`).join('')}
+  </tr>`;
+
+  tbody.innerHTML = groups.length ? groups.map(g => {
+    const title = g.lowConfidence ? ` title="Only ${g.creativeCount} creative${g.creativeCount===1?'':'s'} in this group — treat with caution"` : '';
+    const labelHtml = activeDimDefs.map((d,i) => d.key === 'publisher' ? psPublisherBadge(g.dimValues[i]) : esc(g.dimValues[i])).join(' &rsaquo; ');
+    return `<tr${title}>
+      <td>${labelHtml}${g.lowConfidence ? ' <span style="color:var(--bad)">*</span>' : ''}</td>
+      <td class="num">${g.creativeCount}</td>
+      ${metricCols.map(c => `<td class="num">${c.fmt(bmMetricValue(g, c.key))}</td>`).join('')}
+    </tr>`;
+  }).join('') : `<tr><td colspan="${2+metricCols.length}" style="text-align:center;padding:32px;color:var(--muted)">No groups match current filters</td></tr>`;
+
+  thead.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (bmState.sortCol === col) bmState.sortDir *= -1;
+      else { bmState.sortCol = col; bmState.sortDir = -1; }
+      renderBenchmarks();
+    });
+  });
+
+  document.getElementById('bmRowCount').textContent = `${groups.length} group${groups.length!==1?'s':''}`;
+}
+
+document.getElementById('bmDatasetTypeSelect').addEventListener('change', e => { bmState.datasetType = e.target.value; renderBenchmarks(); });
+document.getElementById('bmPublisherFilter').addEventListener('change', e => { bmState.publisher = e.target.value; renderBenchmarks(); });
+document.getElementById('bmFunnelFilter').addEventListener('change',    e => { bmState.funnel    = e.target.value; renderBenchmarks(); });
+document.getElementById('bmAdTypeFilter').addEventListener('change',    e => { bmState.adType    = e.target.value; renderBenchmarks(); });
+document.getElementById('bmDateFrom').addEventListener('change', e => { bmState.dateFrom = e.target.value || null; renderBenchmarks(); });
+document.getElementById('bmDateTo').addEventListener('change',   e => { bmState.dateTo   = e.target.value || null; renderBenchmarks(); });
+document.getElementById('bmDateRangeClear').addEventListener('click', () => {
+  bmState.dateFrom = bmState.dateTo = null;
+  document.getElementById('bmDateFrom').value = '';
+  document.getElementById('bmDateTo').value = '';
+  renderBenchmarks();
+});
+document.getElementById('bmMetricPills').addEventListener('click', e => {
+  const btn = e.target.closest('[data-metric]');
+  if (!btn) return;
+  const key = btn.dataset.metric;
+  const isActive = bmState.metrics.includes(key);
+  if (isActive && bmState.metrics.length === 1) return; // keep at least one selected
+  bmState.metrics = isActive ? bmState.metrics.filter(k => k !== key) : [...bmState.metrics, key];
+  renderBenchmarks();
+});
+document.getElementById('bmGroupByPills').addEventListener('click', e => {
+  const btn = e.target.closest('[data-dim]');
+  if (!btn) return;
+  const key = btn.dataset.dim;
+  const isActive = bmState.groupDims.includes(key);
+  if (isActive && bmState.groupDims.length === 1) return; // keep at least one selected
+  bmState.groupDims = isActive ? bmState.groupDims.filter(k => k !== key) : [...bmState.groupDims, key];
+  renderBenchmarks();
+});
+
+/* Render when tab activates */
+const _prevTabSwitchBm = window.__onTabSwitch;
+window.__onTabSwitch = function(tab) {
+  if (tab === 'benchmarks') renderBenchmarks();
+  if (typeof _prevTabSwitchBm === 'function') _prevTabSwitchBm(tab);
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Lower Funnel Scorecard — Keep / Rotate+Reduce / Cut decisions
+   Confirmed with Emily: Composite Score ≥50 → Keep, 25–49 → Rotate
+   /Reduce, <25 → Cut (reusing the score bands already documented on
+   the Methodology tab's Composite Score reference). Scoped to Funnel
+   values containing "lower" by default, with a manual override
+   dropdown for datasets that label lower-funnel rows differently.
+   See specs/lower-funnel-scorecard.md.
+
+   Distinct from this file's pre-existing "Rotate/Review" flag inside
+   the Creative Health Report XLSX export (r.rotateFlag, ≤25th
+   percentile within a BigQuery funnel stage) — that's a separate,
+   older concept scoped to a different data source (BigQuery stage
+   rows) and export, not this crosstab-based tab. Deliberately not
+   reusing its "Rotate/Review" naming here to avoid conflating the two.
+   ═══════════════════════════════════════════════════════════ */
+const lfState = {
+  datasetType: 'daily',
+  funnelScope: '__auto__',
+  publisher: 'all', adType: 'all', decision: 'all',
+  dateFrom: null, dateTo: null, search: '',
+  sortCol: 'composite', sortDir: -1,
+};
+
+function lfDecisionFor(score) {
+  if (score == null) return null;
+  if (score >= 50) return 'keep';
+  if (score >= 25) return 'rotate';
+  return 'cut';
+}
+const LF_DECISION_LABELS = { keep:'Keep', rotate:'Rotate / Reduce', cut:'Cut' };
+
+function lfIsLowerFunnel(funnel, scope) {
+  return scope === '__auto__'
+    ? String(funnel||'').toLowerCase().includes('lower')
+    : funnel === scope;
+}
+
+function lfPopulateFunnelScope(rawRows) {
+  const sel = document.getElementById('lfFunnelScopeSelect');
+  const values = [...new Set(rawRows.map(r => r.funnel).filter(Boolean))].sort();
+  let current = lfState.funnelScope;
+  if (current !== '__auto__' && !values.includes(current)) { current = '__auto__'; lfState.funnelScope = '__auto__'; }
+  sel.innerHTML = `<option value="__auto__">Auto: funnel contains "lower"</option>` +
+    values.map(v => `<option value="${esc(v)}"${v===current?' selected':''}>${esc(v)}</option>`).join('');
+}
+
+function lfSortValue(r, col) {
+  if (col === 'composite') return r.composite;
+  if (col === 'peerRank')  return r.peerRank;
+  if (col === 'decision')  return lfDecisionFor(r.composite);
+  if (col === 'imps' || col === 'clicks' || col === 'lpv' || col === 'orders') return r[col];
+  if (col === 'publisher' || col === 'funnel' || col === 'adType' || col === 'creativeId') return r[col];
+  return r.metrics ? r.metrics[col] : null;
+}
+
+function renderLowerFunnelScorecard() {
+  const rawRows = PS_DATASETS[lfState.datasetType] || [];
+
+  if (!rawRows.length) {
+    document.getElementById('lfUploadNotice').style.display = '';
+    document.getElementById('lfBody').style.display = 'none';
+    document.getElementById('lfRowCount').textContent = '';
+    return;
+  }
+  document.getElementById('lfUploadNotice').style.display = 'none';
+  document.getElementById('lfBody').style.display = '';
+
+  psPopulateFilterDropdown('lfPublisherFilter', psDistinctValues(rawRows,'publisher'), lfState.publisher);
+  psPopulateFilterDropdown('lfAdTypeFilter',    psDistinctValues(rawRows,'adType'),    lfState.adType);
+  lfPopulateFunnelScope(rawRows);
+
+  let dateRows = rawRows;
+  if (lfState.dateFrom) dateRows = dateRows.filter(r => r.dateBreakdown && r.dateBreakdown >= lfState.dateFrom);
+  if (lfState.dateTo)   dateRows = dateRows.filter(r => r.dateBreakdown && r.dateBreakdown <= lfState.dateTo);
+
+  const scored = dateRows.length ? psScoreRows(dateRows) : [];
+  const lowerRows = scored.filter(r => lfIsLowerFunnel(r.funnel, lfState.funnelScope));
+
+  let visible = lowerRows.filter(r =>
+    (lfState.publisher === 'all' || r.publisher === lfState.publisher) &&
+    (lfState.adType    === 'all' || r.adType    === lfState.adType)    &&
+    (!lfState.search || r.creativeId.toLowerCase().includes(lfState.search.toLowerCase()))
+  );
+  if (lfState.decision !== 'all') {
+    visible = visible.filter(r => lfDecisionFor(r.composite) === lfState.decision);
+  }
+
+  visible.sort((a,b) => {
+    const av = lfSortValue(a, lfState.sortCol), bv = lfSortValue(b, lfState.sortCol);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'string' || typeof bv === 'string') return String(av).localeCompare(String(bv)) * lfState.sortDir;
+    return (av - bv) * lfState.sortDir;
+  });
+
+  /* Tiles scope to ALL lower-funnel rows (before publisher/adType/decision
+     /search filters) so they read as the whole scorecard's state, not
+     whatever narrower slice the table happens to be filtered to. */
+  const totalImps   = lowerRows.reduce((a,r) => a + r.imps, 0);
+  const keepCount   = lowerRows.filter(r => lfDecisionFor(r.composite) === 'keep').length;
+  const rotateCount = lowerRows.filter(r => lfDecisionFor(r.composite) === 'rotate').length;
+  const cutCount    = lowerRows.filter(r => lfDecisionFor(r.composite) === 'cut').length;
+  const tiles = [
+    { label:'Creatives',       val: fmtN(lowerRows.length), icon:'img',         color:'var(--fg2)' },
+    { label:'Impressions',     val: fmtM(totalImps),        icon:'eye',         color:'var(--accent)' },
+    { label:'Keep',            val: fmtN(keepCount),        icon:'check',       color:'var(--good)' },
+    { label:'Rotate / Reduce', val: fmtN(rotateCount),      icon:'trending-up', color:'var(--orange)' },
+    { label:'Cut',             val: fmtN(cutCount),         icon:'trash',       color:'var(--bad)' },
+  ];
+  document.getElementById('lfKpiRow').innerHTML = tiles.map(t => `
+    <div class="mini-kpi">
+      <div class="mini-kpi-icon" style="color:${t.color}"><svg-icon name="${t.icon}" size="18" color="${t.color}"></svg-icon></div>
+      <div>
+        <div class="mini-kpi-label">${t.label}</div>
+        <div class="mini-kpi-val">${t.val}</div>
+      </div>
+    </div>`).join('');
+
+  const thead = document.getElementById('lfThead');
+  const tbody = document.getElementById('lfTbody');
+  const cols = [
+    {key:'creativeId', label:'Creative ID'},
+    {key:'publisher',  label:'Publisher'},
+    {key:'funnel',     label:'Funnel'},
+    {key:'adType',     label:'Ad Type'},
+    {key:'imps',       label:'Imps'},
+    {key:'ctr',        label:'CTR'},
+    {key:'lpv',        label:'LPVs'},
+    {key:'lpvr',       label:'LPVR'},
+    {key:'orders',     label:'Orders'},
+    {key:'cvr',        label:'CVR'},
+    {key:'tdor',       label:'TDOR'},
+    {key:'composite',  label:'Score'},
+    {key:'peerRank',   label:'Peer Rank'},
+    {key:'decision',   label:'Decision'},
+  ];
+  thead.innerHTML = `<tr>${cols.map(c=>`<th data-col="${c.key}" class="${c.key===lfState.sortCol?(lfState.sortDir===1?'sort-asc':'sort-desc'):''}">${esc(c.label)}</th>`).join('')}</tr>`;
+
+  if (!lowerRows.length) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:32px;color:var(--muted)">No rows matched &quot;lower funnel&quot; automatically — pick the right Funnel value from the dropdown above.</td></tr>`;
+  } else if (!visible.length) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:32px;color:var(--muted)">No rows match current filters</td></tr>`;
+  } else {
+    tbody.innerHTML = visible.map(r => {
+      const decision = lfDecisionFor(r.composite);
+      const scoreCell = r.composite == null ? '—' : `
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="mini-bar-bg" style="width:50px"><div class="mini-bar-fill" style="width:${Math.max(0,Math.min(100,r.composite))}%;background:var(--accent)"></div></div>
+          <span>${r.composite.toFixed(1)}</span>
+        </div>`;
+      const zeroLpvFlag = r.zeroLpv ? `<span class="lf-zero-lpv-flag" title="Zero Landing Page Visits — CVR/LPVR scored neutral (50)">*</span>` : '';
+      return `<tr>
+        <td>${esc(r.creativeId)}${zeroLpvFlag}</td>
+        <td>${psPublisherBadge(r.publisher)}</td>
+        <td>${esc(r.funnel)}</td>
+        <td>${esc(r.adType)}</td>
+        <td class="num">${fmtN(r.imps)}</td>
+        <td class="num">${psFmtPct(r.metrics.ctr)}</td>
+        <td class="num">${fmtN(r.lpv)}</td>
+        <td class="num">${psFmtPct(r.metrics.lpvr)}</td>
+        <td class="num">${fmtN(r.orders)}</td>
+        <td class="num">${psFmtPct(r.metrics.cvr)}</td>
+        <td class="num">${psFmtPct(r.metrics.tdor)}</td>
+        <td>${scoreCell}</td>
+        <td class="num">${r.peerRank ? `${r.peerRank}/${r.peerScoredCount}` : '—'}</td>
+        <td>${decision ? `<span class="decision-badge decision-${decision}">${LF_DECISION_LABELS[decision]}</span>` : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  thead.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (lfState.sortCol === col) lfState.sortDir *= -1;
+      else { lfState.sortCol = col; lfState.sortDir = -1; }
+      renderLowerFunnelScorecard();
+    });
+  });
+
+  document.getElementById('lfRowCount').textContent = `${visible.length} of ${lowerRows.length} row${lowerRows.length!==1?'s':''}`;
+}
+
+document.getElementById('lfDatasetTypeSelect').addEventListener('change', e => { lfState.datasetType = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfFunnelScopeSelect').addEventListener('change', e => { lfState.funnelScope = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfPublisherFilter').addEventListener('change', e => { lfState.publisher = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfAdTypeFilter').addEventListener('change',    e => { lfState.adType    = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfDecisionFilter').addEventListener('change',  e => { lfState.decision  = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfSearch').addEventListener('input', e => { lfState.search = e.target.value; renderLowerFunnelScorecard(); });
+document.getElementById('lfDateFrom').addEventListener('change', e => { lfState.dateFrom = e.target.value || null; renderLowerFunnelScorecard(); });
+document.getElementById('lfDateTo').addEventListener('change',   e => { lfState.dateTo   = e.target.value || null; renderLowerFunnelScorecard(); });
+document.getElementById('lfDateRangeClear').addEventListener('click', () => {
+  lfState.dateFrom = lfState.dateTo = null;
+  document.getElementById('lfDateFrom').value = '';
+  document.getElementById('lfDateTo').value = '';
+  renderLowerFunnelScorecard();
+});
+
+/* Render when tab activates */
+const _prevTabSwitchLf = window.__onTabSwitch;
+window.__onTabSwitch = function(tab) {
+  if (tab === 'scorecard') renderLowerFunnelScorecard();
+  if (typeof _prevTabSwitchLf === 'function') _prevTabSwitchLf(tab);
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Asset Links — link crosstab Creative IDs to a Cloudflare Images
+   asset or a locally-uploaded file. See specs/asset-links.md.
+
+   Crosstab Creative IDs live in a completely different ID space from
+   the BigQuery "Version"/"Creative Offer Name" the Creative Library's
+   Cloudflare matching already uses (cfFetchImages/cfSignIds, defined
+   above for that feature and reused as-is here) — there is no automatic
+   path from one to the other, so every crosstab creative starts out
+   unlinked until matched here, either manually or via an exact-match
+   suggestion.
+
+   Storage is intentionally a brand-new IndexedDB database (not the
+   existing `crkt-previews` one Creative Library's manual-upload
+   fallback uses) so this feature's "Remove All"-style operations can
+   never collide with or wipe that unrelated feature's data.
+   ═══════════════════════════════════════════════════════════ */
+const AL_DB = 'crkt-asset-links', AL_STORE = 'files';
+const AL_LINKS_KEY = 'crkt_al_links_v1';
+
+let AL_LINKS        = {};   // { [creativeId]: {type:'cf'|'local', id, filename} }
+let AL_LOCAL_ASSETS = {};   // { [localKey]: {url, filename} } — object URLs, this session only
+let AL_CF_ASSETS    = [];   // [{id, filename}] raw Cloudflare Images list
+let AL_CF_SIGNED    = {};   // { [cfId]: signedUrl }
+let alCfAssetsLoadedAt = 0;
+let _alUploadTargetId  = null;
+
+const alState = {
+  datasetType: 'daily',
+  publisher: 'all', funnel: 'all', adType: 'all',
+  search: '', assetSearch: '',
+};
+
+function alLoadLinks() {
+  try { AL_LINKS = JSON.parse(localStorage.getItem(AL_LINKS_KEY) || '{}'); }
+  catch { AL_LINKS = {}; }
+}
+function alPersistLinks() { localStorage.setItem(AL_LINKS_KEY, JSON.stringify(AL_LINKS)); }
+alLoadLinks(); // eager, synchronous — so Performance Data's preview column is correct
+                // even if the user never visits the Asset Links tab this session
+
+function alOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(AL_DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(AL_STORE);
+    r.onsuccess = () => res(r.result);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function alPutFile(key, blob, filename) {
+  const db = await alOpen();
+  try {
+    await new Promise((res, rej) => {
+      const tx = db.transaction(AL_STORE, 'readwrite');
+      tx.objectStore(AL_STORE).put({ blob, filename, ts: Date.now() }, key);
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+  } finally { db.close(); }
+}
+async function alLoadFiles() {
+  let db;
+  try { db = await alOpen(); } catch (e) { console.warn('[AL] IndexedDB unavailable:', e && e.message); return AL_LOCAL_ASSETS; }
+  try {
+    const { keys, vals } = await new Promise((res, rej) => {
+      const tx = db.transaction(AL_STORE, 'readonly');
+      const st = tx.objectStore(AL_STORE);
+      const k = st.getAllKeys(), v = st.getAll();
+      tx.oncomplete = () => res({ keys: k.result, vals: v.result });
+      tx.onerror    = () => rej(tx.error);
+    });
+    Object.values(AL_LOCAL_ASSETS).forEach(a => a.url && URL.revokeObjectURL(a.url));
+    AL_LOCAL_ASSETS = {};
+    keys.forEach((k, i) => {
+      const rec = vals[i];
+      if (rec && rec.blob) AL_LOCAL_ASSETS[k] = { url: URL.createObjectURL(rec.blob), filename: rec.filename };
+    });
+  } catch (e) { console.warn('[AL] Load failed:', e && e.message); }
+  finally { db.close(); }
+  return AL_LOCAL_ASSETS;
+}
+
+function alPreviewUrl(link) {
+  if (!link) return null;
+  if (link.type === 'cf')    return AL_CF_SIGNED[link.id] || null;
+  if (link.type === 'local') return (AL_LOCAL_ASSETS[link.id] && AL_LOCAL_ASSETS[link.id].url) || null;
+  return null;
+}
+function alPreviewCellHtml(creativeId) {
+  const link = AL_LINKS[creativeId];
+  if (!link) return '<span class="al-preview-placeholder" title="No linked asset">—</span>';
+  const url = alPreviewUrl(link);
+  return url
+    ? `<img class="al-preview-thumb" src="${url}" alt="" title="${esc(link.filename||'')}">`
+    : `<span class="al-preview-placeholder" title="${esc(link.filename||'Linked, loading…')}"><svg-icon name="img" size="14"></svg-icon></span>`;
+}
+
+async function alFetchCfAssets(force) {
+  if (!force && AL_CF_ASSETS.length && Date.now() - alCfAssetsLoadedAt < 60*60*1000) return AL_CF_ASSETS;
+  try {
+    AL_CF_ASSETS = await cfFetchImages();
+    alCfAssetsLoadedAt = Date.now();
+  } catch (e) { console.warn('[AL] Cloudflare fetch failed:', e && e.message); }
+  return AL_CF_ASSETS;
+}
+async function alSignVisible(ids) {
+  const need = ids.filter(id => !AL_CF_SIGNED[id]);
+  if (!need.length) return;
+  try { Object.assign(AL_CF_SIGNED, await cfSignIds(need)); }
+  catch (e) { console.warn('[AL] Signing failed:', e && e.message); }
+}
+async function alSignLinkedCfAssets() {
+  const ids = [...new Set(Object.values(AL_LINKS).filter(l => l && l.type === 'cf').map(l => l.id))];
+  await alSignVisible(ids);
+}
+
+function alUsageCount(type, id) {
+  return Object.values(AL_LINKS).filter(l => l && l.type === type && l.id === id).length;
+}
+
+/* Groups the currently-loaded crosstab rows to one summary row per
+   Creative ID — every distinct ID starts out "missing" until AL_LINKS
+   has an entry for it. */
+function alGetCreativeSummaries(rawRows) {
+  const byId = new Map();
+  rawRows.forEach(r => {
+    if (!byId.has(r.creativeId)) {
+      byId.set(r.creativeId, { creativeId:r.creativeId, publisher:r.publisher, funnel:r.funnel, adType:r.adType, imps:0 });
+    }
+    byId.get(r.creativeId).imps += r.imps;
+  });
+  return [...byId.values()];
+}
+
+/* Simple exact-match suggestion: another creative that (a) already has
+   a linked asset and (b) shares an identical, non-empty value in every
+   extra Lookup Table column. No fuzzy scoring — deterministic and
+   explainable, and only possible at all once a Lookup Table is loaded
+   (the crosstab itself carries no Concept/Campaign-style dimensions). */
+function alSuggestionFor(creativeId) {
+  const extraCols = PS_LOOKUP.extraCols;
+  if (!extraCols.length) return null;
+  const mine = PS_LOOKUP.byId[creativeId];
+  if (!mine) return null;
+  for (const otherId of Object.keys(AL_LINKS)) {
+    if (otherId === creativeId) continue;
+    const other = PS_LOOKUP.byId[otherId];
+    if (!other) continue;
+    const allMatch = extraCols.every(c => mine[c] && other[c] && mine[c] === other[c]);
+    if (allMatch) return { fromCreativeId: otherId, link: AL_LINKS[otherId] };
+  }
+  return null;
+}
+
+function alLinkCreative(creativeId, link) {
+  AL_LINKS[creativeId] = link;
+  alPersistLinks();
+  const after = () => {
+    renderAssetLinks();
+    if (typeof renderPerformanceScoring === 'function') renderPerformanceScoring();
+  };
+  if (link.type === 'cf') alSignLinkedCfAssets().then(after);
+  else after();
+}
+
+async function renderAssetGrid() {
+  await alFetchCfAssets(false);
+  const q = alState.assetSearch.trim().toLowerCase();
+  const cfMatches    = AL_CF_ASSETS.filter(a => !q || a.filename.toLowerCase().includes(q));
+  const localEntries = Object.entries(AL_LOCAL_ASSETS).filter(([,a]) => !q || a.filename.toLowerCase().includes(q));
+  const totalAssets  = AL_CF_ASSETS.length + Object.keys(AL_LOCAL_ASSETS).length;
+  const totalMatches = cfMatches.length + localEntries.length;
+
+  const cap      = 120;
+  const localPage = localEntries.slice(0, cap);
+  const cfPage    = cfMatches.slice(0, Math.max(0, cap - localPage.length));
+  await alSignVisible(cfPage.map(a => a.id));
+
+  const tiles = [
+    ...localPage.map(([key, a]) => ({ type:'local', id:key, filename:a.filename, url:a.url })),
+    ...cfPage.map(a => ({ type:'cf', id:a.id, filename:a.filename, url:AL_CF_SIGNED[a.id] })),
+  ];
+
+  document.getElementById('alAssetGrid').innerHTML = tiles.length ? tiles.map(t => {
+    const usage = alUsageCount(t.type, t.id);
+    return `<div class="al-asset-tile" draggable="true" data-asset-type="${t.type}" data-asset-id="${esc(t.id)}" data-filename="${esc(t.filename)}">
+      <div class="al-asset-thumb" style="${t.url ? `background-image:url('${t.url}')` : ''}"></div>
+      <div class="al-asset-filename" title="${esc(t.filename)}">${esc(t.filename)}</div>
+      <div class="al-asset-usage">${usage > 0 ? `used by ${usage}` : 'unused'}</div>
+    </div>`;
+  }).join('') : `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-size:12px">No assets match your search</div>`;
+
+  document.getElementById('alAssetCount').textContent =
+    `Showing ${tiles.length} of ${totalAssets} assets${totalMatches > cap ? ' — search to narrow' : ''}`;
+
+  document.querySelectorAll('.al-asset-tile').forEach(tile => {
+    tile.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        type: tile.dataset.assetType, id: tile.dataset.assetId, filename: tile.dataset.filename,
+      }));
+    });
+  });
+}
+
+function renderAssetLinks() {
+  const rawRows = PS_DATASETS[alState.datasetType] || [];
+
+  if (!rawRows.length) {
+    document.getElementById('alUploadNotice').style.display = '';
+    document.getElementById('alBody').style.display = 'none';
+    return;
+  }
+  document.getElementById('alUploadNotice').style.display = 'none';
+  document.getElementById('alBody').style.display = '';
+
+  psPopulateFilterDropdown('alPublisherFilter', psDistinctValues(rawRows,'publisher'), alState.publisher);
+  psPopulateFilterDropdown('alFunnelFilter',    psDistinctValues(rawRows,'funnel'),    alState.funnel);
+  psPopulateFilterDropdown('alAdTypeFilter',    psDistinctValues(rawRows,'adType'),    alState.adType);
+
+  const summaries = alGetCreativeSummaries(rawRows);
+  const missing   = summaries.filter(s => !AL_LINKS[s.creativeId]);
+  const visible   = missing.filter(s =>
+    (alState.publisher === 'all' || s.publisher === alState.publisher) &&
+    (alState.funnel    === 'all' || s.funnel    === alState.funnel)    &&
+    (alState.adType    === 'all' || s.adType    === alState.adType)    &&
+    (!alState.search || s.creativeId.toLowerCase().includes(alState.search.toLowerCase()))
+  );
+
+  document.getElementById('alHeaderSub').textContent =
+    `${missing.length} creative${missing.length !== 1 ? 's' : ''} in this dataset ${missing.length !== 1 ? 'have' : 'has'} no linked asset. Drag an asset onto one, or upload a new file.`;
+  document.getElementById('alMissingCount').textContent = `${visible.length} of ${missing.length}`;
+
+  const suggestions = {};
+  visible.forEach(s => {
+    const sug = alSuggestionFor(s.creativeId);
+    if (sug) suggestions[s.creativeId] = sug;
+  });
+  const suggestionCount = Object.keys(suggestions).length;
+  const acceptBtn = document.getElementById('alAcceptSuggestionsBtn');
+  acceptBtn.textContent = suggestionCount ? `Accept ${suggestionCount} Suggestion${suggestionCount !== 1 ? 's' : ''}` : 'No Suggestions';
+  acceptBtn.disabled = !suggestionCount;
+
+  document.getElementById('alMissingList').innerHTML = visible.length ? visible.map(s => {
+    const lookup = PS_LOOKUP.byId[s.creativeId];
+    const tags = lookup
+      ? PS_LOOKUP.extraCols.filter(c => lookup[c]).map(c => `<span class="al-lookup-tag">${esc(c)}: ${esc(lookup[c])}</span>`).join('')
+      : '';
+    const sug = suggestions[s.creativeId];
+    const sugHtml = sug ? `<div class="al-suggestion">Suggested: reuse asset from <b>${esc(sug.fromCreativeId)}</b>
+        <button class="btn-ghost btn-sm al-suggestion-link-btn" data-creative-id="${esc(s.creativeId)}">Link</button></div>` : '';
+    return `<div class="al-missing-row">
+      <div class="al-missing-row-main">
+        <div class="al-missing-row-top">
+          <span class="al-missing-row-id">${esc(s.creativeId)}</span>
+          ${psPublisherBadge(s.publisher)}
+          <span class="al-lookup-tag">${esc(s.funnel)}</span>
+          <span class="al-lookup-tag">${esc(s.adType)}</span>
+          <span class="al-missing-row-imps">${fmtM(s.imps)} imps</span>
+        </div>
+        ${tags ? `<div class="al-missing-row-tags">${tags}</div>` : ''}
+        ${sugHtml}
+      </div>
+      <div class="al-missing-row-actions">
+        <div class="al-dropzone" data-creative-id="${esc(s.creativeId)}">Drop asset here</div>
+        <button class="btn-ghost btn-sm al-upload-btn" data-creative-id="${esc(s.creativeId)}">Upload</button>
+      </div>
+    </div>`;
+  }).join('') : `<div style="text-align:center;padding:32px;color:var(--muted);font-size:12px">${missing.length ? 'No rows match current filters' : 'Every creative in this dataset has a linked asset'}</div>`;
+
+  document.querySelectorAll('.al-dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      let payload;
+      try { payload = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+      if (!payload || !payload.id) return;
+      alLinkCreative(zone.dataset.creativeId, { type: payload.type, id: payload.id, filename: payload.filename });
+    });
+  });
+  document.querySelectorAll('.al-upload-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _alUploadTargetId = btn.dataset.creativeId;
+      document.getElementById('alUploadPickerInput').click();
+    });
+  });
+  document.querySelectorAll('.al-suggestion-link-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const creativeId = btn.dataset.creativeId;
+      const sug = alSuggestionFor(creativeId);
+      if (sug && sug.link) alLinkCreative(creativeId, { ...sug.link });
+    });
+  });
+
+  renderAssetGrid();
+}
+
+document.getElementById('alUploadPickerInput').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !_alUploadTargetId) return;
+  const key = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  await alPutFile(key, file, file.name);
+  AL_LOCAL_ASSETS[key] = { url: URL.createObjectURL(file), filename: file.name };
+  const targetId = _alUploadTargetId;
+  _alUploadTargetId = null;
+  alLinkCreative(targetId, { type:'local', id:key, filename:file.name });
+});
+
+document.getElementById('alAcceptSuggestionsBtn').addEventListener('click', () => {
+  const rawRows   = PS_DATASETS[alState.datasetType] || [];
+  const summaries = alGetCreativeSummaries(rawRows);
+  const missing   = summaries.filter(s => !AL_LINKS[s.creativeId]);
+  let applied = 0;
+  missing.forEach(s => {
+    const sug = alSuggestionFor(s.creativeId);
+    if (sug && sug.link) { AL_LINKS[s.creativeId] = { ...sug.link }; applied++; }
+  });
+  if (!applied) return;
+  alPersistLinks();
+  alSignLinkedCfAssets().then(() => {
+    renderAssetLinks();
+    if (typeof renderPerformanceScoring === 'function') renderPerformanceScoring();
+  });
+});
+
+document.getElementById('alRefreshBtn').addEventListener('click', async () => {
+  await alFetchCfAssets(true);
+  AL_CF_SIGNED = {};
+  renderAssetGrid();
+});
+
+document.getElementById('alDatasetTypeSelect').addEventListener('change', e => { alState.datasetType = e.target.value; renderAssetLinks(); });
+document.getElementById('alPublisherFilter').addEventListener('change', e => { alState.publisher = e.target.value; renderAssetLinks(); });
+document.getElementById('alFunnelFilter').addEventListener('change',    e => { alState.funnel    = e.target.value; renderAssetLinks(); });
+document.getElementById('alAdTypeFilter').addEventListener('change',    e => { alState.adType    = e.target.value; renderAssetLinks(); });
+document.getElementById('alSearch').addEventListener('input', e => { alState.search = e.target.value; renderAssetLinks(); });
+document.getElementById('alAssetSearch').addEventListener('input', e => { alState.assetSearch = e.target.value; renderAssetGrid(); });
+
+/* Render when tab activates */
+const _prevTabSwitchAl = window.__onTabSwitch;
+window.__onTabSwitch = function(tab) {
+  if (tab === 'assetlinks') {
+    alLoadLinks();
+    alLoadFiles().then(renderAssetLinks);
+  }
+  if (typeof _prevTabSwitchAl === 'function') _prevTabSwitchAl(tab);
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Creative Fatigue Monitor — decay detection over day-level crosstab
+   data. See specs/fatigue-monitor.md for the confirmed methodology.
+
+   Two complementary detectors, combined:
+   - OLS linear regression of the daily metric (CTR or CVR) against day
+     index, for GRADUAL decline — with a t-test on the slope for
+     statistical significance, using a standard t-table (df 1–30, normal
+     approximation beyond that).
+   - CUSUM changepoint detection, for SUDDEN step-changes a straight
+     trend line would blur into a shallow, unremarkable slope. Noise (σ)
+     is estimated from consecutive day-to-day differences (a robust
+     median-absolute-deviation estimator), NOT from the whole series —
+     using whole-series variance would be inflated by the very shift
+     being detected, making the detector blind to real cliffs (caught
+     and fixed during testing: see spec).
+   - A CUSUM-proposed changepoint is only trusted if a two-segment
+     step model actually fits the data meaningfully better than the
+     single OLS line (residual sum of squares below 70% of the line's)
+     — otherwise a smooth, continuous decline gets mislabeled as a
+     sudden "shift" partway through its own gradual slope (also caught
+     during testing).
+   ═══════════════════════════════════════════════════════════ */
+
+/* Confirmed with Emily */
+const FAT_MIN_DAYS = 7,  FAT_MIN_IMPS = 25000;             // eligibility bar
+const FAT_HIGH_CONF_MIN_DAYS = 14, FAT_HIGH_CONF_MIN_IMPS = 50000; // Confidence Tier bar
+const FAT_THRESH = { softening: -0.10, fatiguing: -0.20, dead: -0.40 }; // decline cutoffs
+
+const FAT_T_TABLE = { 1:12.71,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,
+  11:2.201,12:2.179,13:2.160,14:2.145,15:2.131,16:2.120,17:2.110,18:2.101,19:2.093,20:2.086,
+  21:2.080,22:2.074,23:2.069,24:2.064,25:2.060,26:2.056,27:2.052,28:2.048,29:2.045,30:2.042 };
+function fatTCritical(df) { if (df < 1) return 12.71; if (df > 30) return 1.96; return FAT_T_TABLE[df]; }
+
+const fatState = { state: 'all', confidence: 'any', metric: 'ctr', selectedKey: null };
+
+function fatMetricValue(d, metric) {
+  if (metric === 'ctr') return d.imps > 0 ? d.clicks / d.imps : null;
+  return d.lpv > 0 ? d.orders / d.lpv : null; // cvr
+}
+
+/* One row per Creative ID × Publisher × Funnel × Ad Type — same grain
+   as the Composite Score's peer group — with its full day-level history
+   preserved (not summed away) so a decay curve can be built. */
+function fatGroupByExecution(rows) {
+  const groups = new Map();
+  rows.forEach(r => {
+    const key = `${r.creativeId}|${r.publisher}|${r.funnel}|${r.adType}`;
+    if (!groups.has(key)) groups.set(key, { key, creativeId:r.creativeId, publisher:r.publisher, funnel:r.funnel, adType:r.adType, rows:[] });
+    groups.get(key).rows.push(r);
+  });
+  return [...groups.values()];
+}
+function fatBuildSeries(rows) {
+  const byDate = new Map();
+  rows.forEach(r => {
+    if (!r.dateBreakdown) return;
+    if (!byDate.has(r.dateBreakdown)) byDate.set(r.dateBreakdown, { date:r.dateBreakdown, imps:0, clicks:0, lpv:0, orders:0 });
+    const d = byDate.get(r.dateBreakdown);
+    d.imps += r.imps; d.clicks += r.clicks; d.lpv += r.lpv; d.orders += r.orders;
+  });
+  return [...byDate.values()].sort((a,b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+}
+
+function fatOls(xs, ys) {
+  const n = xs.length;
+  const xbar = xs.reduce((a,b)=>a+b,0)/n, ybar = ys.reduce((a,b)=>a+b,0)/n;
+  let sxx = 0, sxy = 0;
+  for (let i=0;i<n;i++) { sxx += (xs[i]-xbar)**2; sxy += (xs[i]-xbar)*(ys[i]-ybar); }
+  const b = sxx > 0 ? sxy/sxx : 0;
+  const a = ybar - b*xbar;
+  let ssRes = 0, ssTot = 0;
+  for (let i=0;i<n;i++) { const pred = a+b*xs[i]; ssRes += (ys[i]-pred)**2; ssTot += (ys[i]-ybar)**2; }
+  const r2 = ssTot > 0 ? 1 - ssRes/ssTot : 0;
+  const df = n - 2;
+  const seB = (df > 0 && sxx > 0) ? Math.sqrt(ssRes/df)/Math.sqrt(sxx) : null;
+  const tStat = (seB && seB > 0) ? b/seB : null;
+  const significant = tStat != null && Math.abs(tStat) > fatTCritical(df);
+  return { a, b, r2, ssRes, significant, n };
+}
+
+function fatRobustSigma(ys) {
+  const diffs = [];
+  for (let i=1;i<ys.length;i++) diffs.push(ys[i]-ys[i-1]);
+  const absDiffs = diffs.map(Math.abs).sort((a,b)=>a-b);
+  const mid = Math.floor(absDiffs.length/2);
+  const medAbsDiff = absDiffs.length % 2 ? absDiffs[mid] : (absDiffs[mid-1]+absDiffs[mid])/2;
+  return (medAbsDiff / 0.6745) / Math.sqrt(2); // MAD -> sd of diffs -> sd of underlying series
+}
+function fatStepModelSSRes(ys, cp) {
+  const before = ys.slice(0, cp), after = ys.slice(cp);
+  if (!before.length || !after.length) return Infinity;
+  const bm = before.reduce((a,b)=>a+b,0)/before.length, am = after.reduce((a,b)=>a+b,0)/after.length;
+  let ss = 0;
+  before.forEach(v => ss += (v-bm)**2);
+  after.forEach(v  => ss += (v-am)**2);
+  return ss;
+}
+/* Two-sided-down CUSUM. Returns a changepoint day-index only if a
+   downward step model fits meaningfully better than the OLS line —
+   otherwise null (let the caller fall back to the trend-based reading). */
+function fatCusum(ys, olsSSRes) {
+  const n = ys.length;
+  const mean = ys.reduce((a,b)=>a+b,0)/n;
+  const sigma = fatRobustSigma(ys);
+  if (!sigma || sigma <= 0) return null;
+  const k = 0.5*sigma, h = 4*sigma;
+  let sLow = 0, runStart = 0, changepoint = null;
+  for (let i=0;i<n;i++) {
+    const prev = sLow;
+    sLow = Math.min(0, sLow + (ys[i]-mean+k));
+    if (prev === 0 && sLow < 0) runStart = i;
+    if (sLow < -h) { changepoint = runStart; break; }
+  }
+  if (changepoint == null || changepoint === 0 || changepoint === n-1) return null;
+  const stepSSRes = fatStepModelSSRes(ys, changepoint);
+  return stepSSRes < 0.7 * (olsSSRes || 1e-9) ? changepoint : null;
+}
+
+function fatAnalyzeSeries(series, metric) {
+  const n = series.length;
+  const totalImps = series.reduce((a,d) => a+d.imps, 0);
+  const xs = [], ys = [];
+  series.forEach((d,i) => { const v = fatMetricValue(d, metric); if (v != null) { xs.push(i); ys.push(v); } });
+
+  if (xs.length < FAT_MIN_DAYS || totalImps < FAT_MIN_IMPS) {
+    return { eligible:false, n, totalImps };
+  }
+
+  const ols = fatOls(xs, ys);
+  const changepointIdx = fatCusum(ys, ols.ssRes);
+
+  let pctChange, method;
+  if (changepointIdx != null) {
+    const before = ys.slice(0, changepointIdx), after = ys.slice(changepointIdx);
+    const beforeMean = before.reduce((a,b)=>a+b,0)/before.length;
+    const afterMean  = after.reduce((a,b)=>a+b,0)/after.length;
+    pctChange = beforeMean > 0 ? (afterMean-beforeMean)/beforeMean : 0;
+    method = 'changepoint';
+  } else {
+    const startPred = ols.a, endPred = ols.a + ols.b*xs[xs.length-1];
+    pctChange = startPred > 0 ? (endPred-startPred)/startPred : 0;
+    method = 'trend';
+  }
+
+  let state = 'healthy';
+  if (pctChange <= FAT_THRESH.dead) state = 'dead';
+  else if (pctChange <= FAT_THRESH.fatiguing) state = 'fatiguing';
+  else if (pctChange <= FAT_THRESH.softening) state = 'softening';
+
+  const highConf = n >= FAT_HIGH_CONF_MIN_DAYS && totalImps >= FAT_HIGH_CONF_MIN_IMPS && ols.significant;
+  const confidence = highConf ? 'high' : 'medium';
+
+  /* Half-life: days from the window's start (day 0) for the fitted trend
+     line to reach 50% of its own starting value. Only meaningful for a
+     declining trend with a positive starting value; capped at 1 year to
+     avoid reporting an absurd number for a barely-declining line. */
+  let halfLifeDays = null;
+  if (ols.b < 0 && ols.a > 0) {
+    const t = -0.5*ols.a/ols.b;
+    if (t > 0 && t <= 365) halfLifeDays = t;
+  }
+
+  return {
+    eligible:true, n, totalImps, xs, ys, ols, changepointIdx, method, pctChange, state, confidence, halfLifeDays,
+    last7dImps: series.slice(-7).reduce((a,d)=>a+d.imps,0),
+  };
+}
+
+function fatComputeAll() {
+  const rawRows = (PS_DATASETS.daily || []).filter(r => r.dateBreakdown);
+  return fatGroupByExecution(rawRows).map(g => {
+    const series = fatBuildSeries(g.rows);
+    return { ...g, series, analysis: fatAnalyzeSeries(series, fatState.metric) };
+  });
+}
+
+function fatSeverityWeight(state) { return { dead:3, fatiguing:2, softening:1 }[state] || 0; }
+function fatRefreshPriority(item) { return fatSeverityWeight(item.analysis.state) * item.analysis.last7dImps; }
+
+function fatDecaySvg(analysis, w, h) {
+  w = w || 520; h = h || 200;
+  const vals = analysis.ys, xs = analysis.xs;
+  const min = Math.min(...vals), max = Math.max(...vals), range = (max-min) || 1;
+  const stepX = xs.length > 1 ? w/(xs.length-1) : w;
+  const toY = v => h - ((v-min)/range)*h;
+  const rawPts   = vals.map((v,i) => `${(i*stepX).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+  const trendPts = xs.map((x,i)  => `${(i*stepX).toFixed(1)},${toY(analysis.ols.a + analysis.ols.b*x).toFixed(1)}`).join(' ');
+  let cpMarker = '';
+  if (analysis.changepointIdx != null) {
+    const cx = (analysis.changepointIdx*stepX).toFixed(1);
+    cpMarker = `<line x1="${cx}" y1="0" x2="${cx}" y2="${h}" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
+    ${cpMarker}
+    <polyline points="${trendPts}" fill="none" stroke="#8A94A6" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <polyline points="${rawPts}" fill="none" stroke="#5BC500" stroke-width="2"/>
+  </svg>`;
+}
+function fatSparklineSvg(vals, w, h, color) {
+  w = w || 120; h = h || 32;
+  const min = Math.min(...vals), max = Math.max(...vals), range = (max-min) || 1;
+  const stepX = vals.length > 1 ? w/(vals.length-1) : w;
+  const pts = vals.map((v,i) => `${(i*stepX).toFixed(1)},${(h-((v-min)/range)*h).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${color||'currentColor'}" stroke-width="1.5"/></svg>`;
+}
+
+function fatStateLabel(s) { return { healthy:'Healthy', softening:'Softening', fatiguing:'Fatiguing', dead:'Dead' }[s] || s; }
+
+function renderFatigueChart(item) {
+  if (!item) {
+    document.getElementById('fatChartArea').innerHTML = `<div class="fat-empty-chart">← Select a creative to view its decay curve</div>`;
+    return;
+  }
+  const a = item.analysis;
+  document.getElementById('fatChartArea').innerHTML = `
+    <div class="fat-chart-header">
+      <div>
+        <div class="fat-queue-row-id">${esc(item.creativeId)}</div>
+        <div class="fat-chart-meta">${psPublisherBadge(item.publisher)} ${esc(item.funnel)} · ${esc(item.adType)}</div>
+      </div>
+      <span class="fat-badge fat-${a.state}">${fatStateLabel(a.state)}</span>
+    </div>
+    ${fatDecaySvg(a)}
+    <div class="fat-chart-legend">
+      <span><span class="fat-legend-swatch" style="background:#5BC500"></span>Daily ${fatState.metric.toUpperCase()}</span>
+      <span><span class="fat-legend-swatch" style="border-top:2px dashed #8A94A6"></span>Trend line</span>
+      ${a.changepointIdx != null ? `<span><span class="fat-legend-swatch" style="background:var(--bad)"></span>Shift detected</span>` : ''}
+    </div>
+    <div class="fat-chart-meta" style="margin-top:10px">
+      ${(a.pctChange*100).toFixed(1)}% ${a.method === 'changepoint' ? 'step change' : 'trend'} over ${a.n} days
+      · ${a.confidence === 'high' ? 'High' : 'Medium'} confidence
+      ${a.halfLifeDays != null ? `· Est. half-life ${(a.halfLifeDays/7).toFixed(1)} wks from first day observed` : ''}
+    </div>`;
+}
+
+function renderFatigueMonitor() {
+  const rawRows = PS_DATASETS.daily || [];
+  if (!rawRows.length) {
+    document.getElementById('fatUploadNotice').style.display = '';
+    document.getElementById('fatBody').style.display = 'none';
+    return;
+  }
+  document.getElementById('fatUploadNotice').style.display = 'none';
+  document.getElementById('fatBody').style.display = '';
+
+  const all = fatComputeAll();
+  const ineligible = all.filter(x => !x.analysis.eligible);
+  const eligible   = all.filter(x => x.analysis.eligible);
+
+  document.getElementById('fatEligibilityNote').textContent =
+    `${ineligible.length} creative${ineligible.length !== 1 ? 's are' : ' is'} too new to evaluate (need ≥${FAT_MIN_DAYS} days, ${fmtN(FAT_MIN_IMPS)} impressions).`;
+
+  let filtered = eligible;
+  if (fatState.state === 'flagged') filtered = filtered.filter(x => x.analysis.state !== 'healthy');
+  else if (fatState.state !== 'all') filtered = filtered.filter(x => x.analysis.state === fatState.state);
+  if (fatState.confidence === 'high') filtered = filtered.filter(x => x.analysis.confidence === 'high');
+
+  const flagged = eligible.filter(x => x.analysis.state !== 'healthy');
+  const fatiguingOrDead = eligible.filter(x => x.analysis.state === 'fatiguing' || x.analysis.state === 'dead');
+  const refreshNow = eligible.filter(x => x.analysis.state === 'dead' && x.analysis.confidence === 'high');
+  const impsAtRisk = flagged.reduce((a,x) => a + x.analysis.last7dImps, 0);
+  const halfLives = flagged.map(x => x.analysis.halfLifeDays).filter(v => v != null).sort((a,b)=>a-b);
+  const medianHalfLifeDays = halfLives.length
+    ? (halfLives.length % 2 ? halfLives[(halfLives.length-1)/2] : (halfLives[halfLives.length/2-1]+halfLives[halfLives.length/2])/2)
+    : null;
+
+  const tiles = [
+    { label:'Fatiguing',        val: fmtN(fatiguingOrDead.length),                         sub:'fatiguing + dead' },
+    { label:'Refresh Now',      val: fmtN(refreshNow.length),                              sub:'dead, high confidence' },
+    { label:'Imps at Risk',     val: fmtM(impsAtRisk),                                     sub:'last 7d, flagged' },
+    { label:'Median Half-Life', val: medianHalfLifeDays != null ? (medianHalfLifeDays/7).toFixed(1)+' wks' : '—', sub:'across flagged' },
+  ];
+  document.getElementById('fatKpiRow').innerHTML = tiles.map(t => `
+    <div class="mini-kpi">
+      <div><div class="mini-kpi-label">${t.label}</div><div class="mini-kpi-val">${t.val}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${t.sub}</div></div>
+    </div>`).join('');
+
+  const queue = filtered.filter(x => x.analysis.state !== 'healthy').sort((a,b) => fatRefreshPriority(b) - fatRefreshPriority(a));
+  document.getElementById('fatQueueTitle').textContent = `Refresh Queue (${queue.length})`;
+  document.getElementById('fatQueueList').innerHTML = queue.length ? queue.map(item => `
+    <div class="fat-queue-row${item.key===fatState.selectedKey?' selected':''}" data-key="${esc(item.key)}">
+      <span class="fat-badge fat-${item.analysis.state}">${fatStateLabel(item.analysis.state)}</span>
+      <span class="fat-queue-row-id">${esc(item.creativeId)}</span>
+      <span class="fat-queue-row-meta">${esc(item.publisher)} · ${esc(item.funnel)}</span>
+      <span class="fat-queue-row-pct">${(item.analysis.pctChange*100).toFixed(0)}%</span>
+    </div>`).join('') : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">Nothing matches the current filters</div>`;
+
+  document.querySelectorAll('.fat-queue-row').forEach(row => {
+    row.addEventListener('click', () => {
+      fatState.selectedKey = row.dataset.key;
+      renderFatigueMonitor();
+    });
+  });
+
+  const selected = filtered.find(x => x.key === fatState.selectedKey) || null;
+  renderFatigueChart(selected);
+
+  const topFatiguing = fatiguingOrDead.slice().sort((a,b) => fatRefreshPriority(b) - fatRefreshPriority(a)).slice(0, 12);
+  document.getElementById('fatSparklineGrid').innerHTML = topFatiguing.length ? topFatiguing.map(item => `
+    <div class="fat-sparkline-card" data-key="${esc(item.key)}">
+      <div class="fat-sparkline-id">${esc(item.creativeId)}</div>
+      <div class="fat-sparkline-meta">${esc(item.publisher)} · ${esc(item.funnel)}</div>
+      ${fatSparklineSvg(item.analysis.ys, 120, 30, item.analysis.state === 'dead' ? '#C2185B' : '#FF8200')}
+      <span class="fat-badge fat-${item.analysis.state}" style="margin-top:6px">${fatStateLabel(item.analysis.state)}</span>
+      <div class="fat-sparkline-pct">${(item.analysis.pctChange*100).toFixed(0)}%</div>
+    </div>`).join('') : `<div style="color:var(--muted);font-size:12px">Nothing fatiguing right now</div>`;
+
+  document.querySelectorAll('.fat-sparkline-card').forEach(card => {
+    card.addEventListener('click', () => { fatState.selectedKey = card.dataset.key; renderFatigueMonitor(); });
+  });
+}
+
+document.getElementById('fatStateFilter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-state]'); if (!btn) return;
+  fatState.state = btn.dataset.state;
+  document.querySelectorAll('#fatStateFilter button').forEach(b => b.classList.toggle('active', b===btn));
+  renderFatigueMonitor();
+});
+document.getElementById('fatConfidenceFilter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-conf]'); if (!btn) return;
+  fatState.confidence = btn.dataset.conf;
+  document.querySelectorAll('#fatConfidenceFilter button').forEach(b => b.classList.toggle('active', b===btn));
+  renderFatigueMonitor();
+});
+document.getElementById('fatMetricToggle').addEventListener('click', e => {
+  const btn = e.target.closest('[data-metric]'); if (!btn) return;
+  fatState.metric = btn.dataset.metric;
+  document.querySelectorAll('#fatMetricToggle button').forEach(b => b.classList.toggle('active', b===btn));
+  renderFatigueMonitor();
+});
+
+/* Render when tab activates */
+const _prevTabSwitchFat = window.__onTabSwitch;
+window.__onTabSwitch = function(tab) {
+  if (tab === 'fatigue') renderFatigueMonitor();
+  if (typeof _prevTabSwitchFat === 'function') _prevTabSwitchFat(tab);
+};
 
 /* ── View toggle (Creative Library ↔ Performance Scoring) ── */
 document.getElementById('crViewToggle').addEventListener('click', e => {
@@ -8954,11 +10670,38 @@ const PV_METRICS = [
 ];
 
 const PV_DIMS = {
-  stage:    { label:'Stage',    creativeOnly:false },
-  q:        { label:'Quarter',  creativeOnly:false },
-  mkt:      { label:'Market',   creativeOnly:false },
-  creative: { label:'Creative', creativeOnly:true  },
+  stage:      { label:'Stage',      creativeOnly:false },
+  q:          { label:'Quarter',    creativeOnly:false },
+  mkt:        { label:'Market',     creativeOnly:false },
+  creative:   { label:'Creative',   creativeOnly:true  },
+  initiative: { label:'Initiative', creativeOnly:true  },
 };
+
+/* Initiative is parsed straight out of the Creative Offer Name string —
+   NOT a join across ID spaces. Confirmed with Emily: only these known
+   initiative labels, matched case-insensitively anywhere in the name;
+   anything else falls into a generic "Other" bucket. Hyphens/underscores
+   are normalized to spaces before matching (this codebase's naming
+   conventions use underscores heavily — see CLAUDE.md — so "Deal_Drop"
+   and "Deal-Drop" still match "Deal Drop"). Deal Drop and Strike Sale
+   share one merged label ("Deal Drop / Strike Sale") per Emily — she
+   considers them the same initiative in practice — while still matching
+   on both needles, since a Creative Offer Name will only ever contain
+   one or the other, never both. See specs/pivot-initiative.md. */
+const PV_INITIATIVES = [
+  { label:'Do the Most',              needle:'do the most' },
+  { label:'Deal Drop / Strike Sale',  needle:'deal drop'   },
+  { label:'Deal Drop / Strike Sale',  needle:'strike sale' },
+];
+const PV_INITIATIVE_OTHER = 'Other';
+function pvNormalizeForMatch(s) {
+  return String(s || '').toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function pvExtractInitiative(creativeOfferName) {
+  const norm = pvNormalizeForMatch(creativeOfferName);
+  const hit = PV_INITIATIVES.find(it => norm.includes(it.needle));
+  return hit ? hit.label : PV_INITIATIVE_OTHER;
+}
 
 let pvState = { src:'creatives', layout:'grouped', rowDim:'creative', colDim:'stage', metrics:['imps','clicks','ctr'], sortMetric:'imps', sortCol:'__total__', sortDir:-1, mkt:'all', qs:[...ALL_QS], dateFrom:null, dateTo:null, collapsed:new Set() };
 
@@ -8970,7 +10713,13 @@ function pvPool() {
   const raw = pvState.src === 'creatives'
     ? effectiveCreativeRows(pvState.dateFrom, pvState.dateTo)
     : effectiveStageRows(pvState.dateFrom, pvState.dateTo);
-  return raw.filter(r =>
+  // Stage-level rows have no Creative Offer Name to parse, so Initiative
+  // is only attached at creative grain — spread into a new object rather
+  // than mutating the cached rows other tabs (Analytics, Creatives) share.
+  const withInitiative = pvState.src === 'creatives'
+    ? raw.map(r => ({ ...r, initiative: pvExtractInitiative(r.creative) }))
+    : raw;
+  return withInitiative.filter(r =>
     (pvState.mkt === 'all' || r.mkt === pvState.mkt) &&
     pvState.qs.includes(r.q)
   );
